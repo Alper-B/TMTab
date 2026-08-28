@@ -1,0 +1,601 @@
+participant,task_type,log_file,distance_threshold,click_time_threshold,total_time_ms,average_click_time_ms,total_targets,completed_targets,miss_count,late_click_count
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,200.0,43115.0,1724.6,25,25,14,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,400.0,43115.0,1724.6,25,25,2,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,600.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,1000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,1200.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,20.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,200.0,43115.0,1724.6,25,25,18,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,400.0,43115.0,1724.6,25,25,6,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,600.0,43115.0,1724.6,25,25,2,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,800.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,1200.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,30.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,200.0,43115.0,1724.6,25,25,22,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,400.0,43115.0,1724.6,25,25,10,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,600.0,43115.0,1724.6,25,25,3,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,800.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,1200.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,40.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,200.0,43115.0,1724.6,25,25,23,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,400.0,43115.0,1724.6,25,25,12,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,600.0,43115.0,1724.6,25,25,3,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,800.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,1200.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,50.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,200.0,43115.0,1724.6,25,25,23,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,400.0,43115.0,1724.6,25,25,13,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,600.0,43115.0,1724.6,25,25,4,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,800.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,1200.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,60.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,200.0,43115.0,1724.6,25,25,24,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,400.0,43115.0,1724.6,25,25,15,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,600.0,43115.0,1724.6,25,25,5,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,800.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,1200.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,70.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,200.0,43115.0,1724.6,25,25,24,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,400.0,43115.0,1724.6,25,25,17,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,600.0,43115.0,1724.6,25,25,6,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,800.0,43115.0,1724.6,25,25,2,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,1200.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,1400.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,80.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,200.0,43115.0,1724.6,25,25,25,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,400.0,43115.0,1724.6,25,25,21,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,600.0,43115.0,1724.6,25,25,6,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,800.0,43115.0,1724.6,25,25,2,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,1200.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,1400.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,90.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,200.0,43115.0,1724.6,25,25,25,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,400.0,43115.0,1724.6,25,25,23,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,600.0,43115.0,1724.6,25,25,7,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,800.0,43115.0,1724.6,25,25,2,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,1000.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,1200.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,1400.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,100.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,200.0,43115.0,1724.6,25,25,25,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,400.0,43115.0,1724.6,25,25,23,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,600.0,43115.0,1724.6,25,25,9,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,800.0,43115.0,1724.6,25,25,4,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,1000.0,43115.0,1724.6,25,25,2,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,1200.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,1400.0,43115.0,1724.6,25,25,1,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,1600.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,1800.0,43115.0,1724.6,25,25,0,0
+subA,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_A_20260807_011934.jsonl,120.0,2000.0,43115.0,1724.6,25,25,0,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,200.0,110110.0,4404.4,25,25,10,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,400.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,600.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,800.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,1000.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,1200.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,1400.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,1600.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,1800.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,20.0,2000.0,110110.0,4404.4,25,25,1,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,200.0,110110.0,4404.4,25,25,15,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,400.0,110110.0,4404.4,25,25,9,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,600.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,800.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,1000.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,1200.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,1400.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,1600.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,1800.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,30.0,2000.0,110110.0,4404.4,25,25,2,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,200.0,110110.0,4404.4,25,25,23,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,400.0,110110.0,4404.4,25,25,11,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,600.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,800.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,1000.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,1200.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,1400.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,1600.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,1800.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,40.0,2000.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,200.0,110110.0,4404.4,25,25,24,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,400.0,110110.0,4404.4,25,25,12,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,600.0,110110.0,4404.4,25,25,6,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,800.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,1000.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,1200.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,1400.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,1600.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,1800.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,50.0,2000.0,110110.0,4404.4,25,25,3,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,200.0,110110.0,4404.4,25,25,24,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,400.0,110110.0,4404.4,25,25,15,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,600.0,110110.0,4404.4,25,25,8,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,800.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,1000.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,1200.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,1400.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,1600.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,1800.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,60.0,2000.0,110110.0,4404.4,25,25,4,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,200.0,110110.0,4404.4,25,25,24,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,400.0,110110.0,4404.4,25,25,16,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,600.0,110110.0,4404.4,25,25,10,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,800.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,1000.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,1200.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,1400.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,1600.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,1800.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,70.0,2000.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,200.0,110110.0,4404.4,25,25,26,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,400.0,110110.0,4404.4,25,25,17,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,600.0,110110.0,4404.4,25,25,10,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,800.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,1000.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,1200.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,1400.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,1600.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,1800.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,80.0,2000.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,200.0,110110.0,4404.4,25,25,26,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,400.0,110110.0,4404.4,25,25,17,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,600.0,110110.0,4404.4,25,25,10,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,800.0,110110.0,4404.4,25,25,6,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,1000.0,110110.0,4404.4,25,25,6,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,1200.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,1400.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,1600.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,1800.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,90.0,2000.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,200.0,110110.0,4404.4,25,25,26,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,400.0,110110.0,4404.4,25,25,19,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,600.0,110110.0,4404.4,25,25,11,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,800.0,110110.0,4404.4,25,25,7,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,1000.0,110110.0,4404.4,25,25,7,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,1200.0,110110.0,4404.4,25,25,6,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,1400.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,1600.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,1800.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,100.0,2000.0,110110.0,4404.4,25,25,5,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,200.0,110110.0,4404.4,25,25,26,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,400.0,110110.0,4404.4,25,25,20,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,600.0,110110.0,4404.4,25,25,13,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,800.0,110110.0,4404.4,25,25,10,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,1000.0,110110.0,4404.4,25,25,9,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,1200.0,110110.0,4404.4,25,25,8,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,1400.0,110110.0,4404.4,25,25,7,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,1600.0,110110.0,4404.4,25,25,7,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,1800.0,110110.0,4404.4,25,25,7,0
+subA,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subA\participant_B_20260807_012017.jsonl,120.0,2000.0,110110.0,4404.4,25,25,7,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,200.0,43357.0,1734.28,25,25,4,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,800.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,1000.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,1200.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,1400.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,1600.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,1800.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,20.0,2000.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,200.0,43357.0,1734.28,25,25,10,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,800.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,1000.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,1200.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,1400.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,1600.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,1800.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,30.0,2000.0,43357.0,1734.28,25,25,1,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,200.0,43357.0,1734.28,25,25,14,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,400.0,43357.0,1734.28,25,25,4,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,40.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,200.0,43357.0,1734.28,25,25,16,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,400.0,43357.0,1734.28,25,25,5,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,50.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,200.0,43357.0,1734.28,25,25,18,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,400.0,43357.0,1734.28,25,25,6,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,60.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,200.0,43357.0,1734.28,25,25,19,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,400.0,43357.0,1734.28,25,25,6,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,70.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,200.0,43357.0,1734.28,25,25,20,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,400.0,43357.0,1734.28,25,25,7,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,80.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,200.0,43357.0,1734.28,25,25,23,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,400.0,43357.0,1734.28,25,25,7,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,90.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,200.0,43357.0,1734.28,25,25,24,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,400.0,43357.0,1734.28,25,25,7,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,100.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,200.0,43357.0,1734.28,25,25,24,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,400.0,43357.0,1734.28,25,25,7,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,600.0,43357.0,1734.28,25,25,3,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,1000.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,1200.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,1400.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,1600.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,1800.0,43357.0,1734.28,25,25,2,0
+subB,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_A_20260806_171032 (1).jsonl,120.0,2000.0,43357.0,1734.28,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,200.0,59770.0,2390.8,25,25,8,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,400.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,600.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,800.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,1000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,1200.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,1400.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,1600.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,1800.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,20.0,2000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,200.0,59770.0,2390.8,25,25,18,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,400.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,600.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,800.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,1000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,1200.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,1400.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,1600.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,1800.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,30.0,2000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,200.0,59770.0,2390.8,25,25,22,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,400.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,600.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,800.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,1000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,1200.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,1400.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,1600.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,1800.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,40.0,2000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,200.0,59770.0,2390.8,25,25,23,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,400.0,59770.0,2390.8,25,25,7,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,600.0,59770.0,2390.8,25,25,4,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,800.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,1000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,1200.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,1400.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,1600.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,1800.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,50.0,2000.0,59770.0,2390.8,25,25,1,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,200.0,59770.0,2390.8,25,25,24,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,400.0,59770.0,2390.8,25,25,8,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,600.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,800.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,1000.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,1200.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,1400.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,1600.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,1800.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,60.0,2000.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,200.0,59770.0,2390.8,25,25,24,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,400.0,59770.0,2390.8,25,25,9,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,600.0,59770.0,2390.8,25,25,6,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,800.0,59770.0,2390.8,25,25,4,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,1000.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,1200.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,1400.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,1600.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,1800.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,70.0,2000.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,200.0,59770.0,2390.8,25,25,24,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,400.0,59770.0,2390.8,25,25,11,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,600.0,59770.0,2390.8,25,25,7,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,800.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,1000.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,1200.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,1400.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,1600.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,1800.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,80.0,2000.0,59770.0,2390.8,25,25,2,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,200.0,59770.0,2390.8,25,25,25,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,400.0,59770.0,2390.8,25,25,13,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,600.0,59770.0,2390.8,25,25,9,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,800.0,59770.0,2390.8,25,25,7,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,1000.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,1200.0,59770.0,2390.8,25,25,4,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,1400.0,59770.0,2390.8,25,25,4,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,1600.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,1800.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,90.0,2000.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,200.0,59770.0,2390.8,25,25,25,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,400.0,59770.0,2390.8,25,25,13,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,600.0,59770.0,2390.8,25,25,9,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,800.0,59770.0,2390.8,25,25,7,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,1000.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,1200.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,1400.0,59770.0,2390.8,25,25,4,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,1600.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,1800.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,100.0,2000.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,200.0,59770.0,2390.8,25,25,27,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,400.0,59770.0,2390.8,25,25,13,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,600.0,59770.0,2390.8,25,25,9,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,800.0,59770.0,2390.8,25,25,8,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,1000.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,1200.0,59770.0,2390.8,25,25,5,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,1400.0,59770.0,2390.8,25,25,4,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,1600.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,1800.0,59770.0,2390.8,25,25,3,0
+subB,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subB\participant_B_20260806_171115 (1).jsonl,120.0,2000.0,59770.0,2390.8,25,25,3,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,200.0,47761.0,1910.44,25,25,7,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,20.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,200.0,47761.0,1910.44,25,25,13,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,30.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,200.0,47761.0,1910.44,25,25,17,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,40.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,200.0,47761.0,1910.44,25,25,17,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,50.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,200.0,47761.0,1910.44,25,25,18,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,400.0,47761.0,1910.44,25,25,3,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,60.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,200.0,47761.0,1910.44,25,25,20,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,400.0,47761.0,1910.44,25,25,3,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,70.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,200.0,47761.0,1910.44,25,25,20,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,400.0,47761.0,1910.44,25,25,4,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,80.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,200.0,47761.0,1910.44,25,25,21,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,400.0,47761.0,1910.44,25,25,6,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,600.0,47761.0,1910.44,25,25,2,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,90.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,200.0,47761.0,1910.44,25,25,22,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,400.0,47761.0,1910.44,25,25,7,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,600.0,47761.0,1910.44,25,25,3,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,100.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,200.0,47761.0,1910.44,25,25,25,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,400.0,47761.0,1910.44,25,25,8,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,600.0,47761.0,1910.44,25,25,4,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,800.0,47761.0,1910.44,25,25,2,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,1000.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,1200.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,1400.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,1600.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,1800.0,47761.0,1910.44,25,25,1,0
+subC,A,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_A_20260806_165305.jsonl,120.0,2000.0,47761.0,1910.44,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,200.0,59346.0,2373.84,25,25,12,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,400.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,600.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,800.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,1000.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,1200.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,1400.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,1600.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,1800.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,20.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,200.0,59346.0,2373.84,25,25,14,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,400.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,600.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,800.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,1000.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,1200.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,1400.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,1600.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,1800.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,30.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,200.0,59346.0,2373.84,25,25,18,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,400.0,59346.0,2373.84,25,25,6,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,600.0,59346.0,2373.84,25,25,3,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,1000.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,1200.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,1400.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,1600.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,1800.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,40.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,200.0,59346.0,2373.84,25,25,20,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,400.0,59346.0,2373.84,25,25,6,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,600.0,59346.0,2373.84,25,25,3,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,1000.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,1200.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,1400.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,1600.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,1800.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,50.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,200.0,59346.0,2373.84,25,25,20,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,400.0,59346.0,2373.84,25,25,6,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,600.0,59346.0,2373.84,25,25,3,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,1000.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,1200.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,1400.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,1600.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,1800.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,60.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,200.0,59346.0,2373.84,25,25,20,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,400.0,59346.0,2373.84,25,25,7,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,600.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,1000.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,1200.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,1400.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,1600.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,1800.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,70.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,200.0,59346.0,2373.84,25,25,22,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,400.0,59346.0,2373.84,25,25,8,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,600.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,1000.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,1200.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,1400.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,1600.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,1800.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,80.0,2000.0,59346.0,2373.84,25,25,0,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,200.0,59346.0,2373.84,25,25,23,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,400.0,59346.0,2373.84,25,25,9,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,600.0,59346.0,2373.84,25,25,5,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,800.0,59346.0,2373.84,25,25,3,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,1000.0,59346.0,2373.84,25,25,3,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,1200.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,1400.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,1600.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,1800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,90.0,2000.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,200.0,59346.0,2373.84,25,25,24,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,400.0,59346.0,2373.84,25,25,10,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,600.0,59346.0,2373.84,25,25,6,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,800.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,1000.0,59346.0,2373.84,25,25,3,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,1200.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,1400.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,1600.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,1800.0,59346.0,2373.84,25,25,2,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,100.0,2000.0,59346.0,2373.84,25,25,1,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,200.0,59346.0,2373.84,25,25,25,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,400.0,59346.0,2373.84,25,25,13,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,600.0,59346.0,2373.84,25,25,7,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,800.0,59346.0,2373.84,25,25,5,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,1000.0,59346.0,2373.84,25,25,5,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,1200.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,1400.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,1600.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,1800.0,59346.0,2373.84,25,25,4,0
+subC,B,C:\Users\Alper\Desktop\projects\TMTab\particpants\subC\participant_B_20260806_165353.jsonl,120.0,2000.0,59346.0,2373.84,25,25,3,0

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TMT Agent & Environment</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #223040;
+      --muted: #6b7a8f;
+      --accent: #ff7a1a;
+      --accent-2: #2d7ff9;
+      --success: #24b47e;
+      --danger: #ef476f;
+      --border: #e1e7ef;
+      --shadow: 0 10px 24px rgba(34, 48, 64, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 24px;
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero, .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 1.7rem;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .badge {
+      background: linear-gradient(135deg, var(--accent), #ffb36b);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .panel { padding: 18px; }
+    .panel h2 { margin: 0 0 12px; font-size: 1.05rem; }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: var(--accent-2);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); opacity: 0.95; }
+    button.secondary { background: #4f5f6f; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 18px;
+    }
+
+    .board {
+      min-height: 360px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #fcfdff 0%, #f4f8ff 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .board::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 20%, rgba(45,127,249,0.08) 0 6px, transparent 7px), radial-gradient(circle at 75% 25%, rgba(255,122,26,0.08) 0 7px, transparent 8px);
+      pointer-events: none;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .flow-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .flow-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fcfdff;
+      color: var(--ink);
+    }
+
+    .flow-item.active { border-color: var(--accent); background: #fff7ef; }
+    .flow-item.success { border-color: var(--success); background: #f2fdf8; }
+    .flow-item.error { border-color: var(--danger); background: #fff3f6; }
+
+    .meta { margin-top: 8px; color: var(--muted); font-size: 0.92rem; }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <section class="hero">
+      <div>
+        <h1>TMT Agent & Environment</h1>
+        <p>A compact simulator for the two-part Trail Making Test, driven by a heuristic agent and a timing-aware environment.</p>
+      </div>
+      <div class="badge">MVP • No RL • Clear latency traces</div>
+    </section>
+
+    <section class="panel">
+      <div class="controls">
+        <button onclick="runDemo()">Run Simulation</button>
+        <button class="secondary" onclick="resetView()">Reset View</button>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <h2>Task Board</h2>
+        <div class="board">
+          <canvas id="board"></canvas>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Flowchart Trace</h2>
+        <div class="flow-list" id="flow-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('board');
+    const ctx = canvas.getContext('2d');
+    const flowList = document.getElementById('flow-list');
+
+    const stepsA = [
+      'Goal Retrieval',
+      'Visual Search',
+      'Target Identification',
+      'Visuomotor Planning',
+      'Motor Execution',
+      'Performance Monitoring',
+      'Update Working Memory'
+    ];
+
+    const stepsB = [
+      'Goal Retrieval',
+      'Maintain Alternation Rule',
+      'Inhibit Previous Set',
+      'Switch Cognitive Set',
+      'Visual Search',
+      'Target Identification',
+      'Visuomotor Planning & Motor Execution',
+      'Performance Monitoring',
+      'Update Working Memory'
+    ];
+
+    const targetsA = ['1', '2', '3', '4'];
+    const targetsB = ['1', 'A', '2', 'B'];
+    let currentMode = 'A';
+    let activeIndex = 0;
+    let stepLog = [];
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+      drawBoard();
+    }
+
+    function drawBoard() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = '#f8fbff';
+      ctx.fillRect(0, 0, w, h);
+
+      const positions = currentMode === 'A'
+        ? [{label:'1', x:70, y:80}, {label:'2', x:240, y:120}, {label:'3', x:140, y:280}, {label:'4', x:320, y:220}]
+        : [{label:'1', x:70, y:80}, {label:'A', x:240, y:120}, {label:'2', x:140, y:280}, {label:'B', x:320, y:220}];
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#cdd7e3';
+      ctx.lineWidth = 3;
+      ctx.moveTo(positions[0].x, positions[0].y);
+      positions.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.stroke();
+
+      positions.forEach((p, idx) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 24, 0, Math.PI * 2);
+        ctx.fillStyle = idx <= activeIndex ? '#24b47e' : '#ffffff';
+        ctx.strokeStyle = '#223040';
+        ctx.lineWidth = 2;
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = idx <= activeIndex ? '#ffffff' : '#223040';
+        ctx.font = 'bold 16px Segoe UI';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(p.label, p.x, p.y);
+      });
+
+      ctx.beginPath();
+      ctx.arc(70, 80, 8, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff7a1a';
+      ctx.fill();
+    }
+
+    function resetView() {
+      activeIndex = 0;
+      stepLog = [];
+      flowList.innerHTML = '';
+      drawBoard();
+    }
+
+    function renderFlow() {
+      const steps = currentMode === 'A' ? stepsA : stepsB;
+      flowList.innerHTML = '';
+      steps.forEach((step, idx) => {
+        const item = document.createElement('div');
+        item.className = 'flow-item' + (idx === activeIndex ? ' active' : '');
+        item.innerHTML = `<strong>${idx + 1}. ${step}</strong><div class="meta">${stepLog[idx] || 'awaiting run'}</div>`;
+        flowList.appendChild(item);
+      });
+    }
+
+    function runDemo() {
+      currentMode = 'A';
+      activeIndex = 0;
+      stepLog = [];
+      const steps = stepsA;
+      const sequence = steps.map((step, idx) => `${step} (${idx + 1}/${steps.length})`);
+      stepLog = sequence;
+      renderFlow();
+      drawBoard();
+      setTimeout(() => {
+        currentMode = 'B';
+        activeIndex = 0;
+        stepLog = stepsB.map((step, idx) => `${step} (${idx + 1}/${stepsB.length})`);
+        renderFlow();
+        drawBoard();
+      }, 400);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      resetView();
+    });
+  </script>
+</body>
+</html>

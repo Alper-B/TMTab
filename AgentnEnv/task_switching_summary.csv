@@ -1,0 +1,4 @@
+participant,tmt_a_average_click_time_ms,tmt_b_average_click_time_ms,switch_time_ms,distance_threshold,click_time_threshold
+subA,1724.6,4404.4,-2679.8,60.0,800.0
+subB,1734.28,2390.8,-656.52,60.0,800.0
+subC,1910.44,2373.84,-463.4,60.0,800.0
