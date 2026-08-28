@@ -6,48 +6,66 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk
 
-"""
-My application is built in Python. To send the synchronization triggers from my app to the EyeLink data file,
-I added the SR Research pylink library. I've set it up to send a sendMessage string every time a task starts or a target is clicked.
-Assuming we connect to the standard EyeLink IP address.
-
-NTE: ask using 'pylink' to send messages to the EDF file.
-"""
-
-# --- EYELINK PLACEHOLDER ---
-
+# --- EYELINK PSYCHOPY IMPLEMENTATION ---
 try:
-    import pylink
-    EYELINK_AVAILABLE = True
+    from psychopy.iohub import launchHubServer
+    PSYCHOPY_AVAILABLE = True
 except ImportError:
-    EYELINK_AVAILABLE = False
+    PSYCHOPY_AVAILABLE = False
 
 class EyeTrackerController:
-    """Handles communication with the ABL EyeLink Host PC."""
+    """Handles communication with the ABL EyeLink Host PC using PsychoPy ioHub."""
     def __init__(self):
         self.connected = False
         self.tracker = None
+        self.io = None
         
     def connect(self):
-        if EYELINK_AVAILABLE:
+        if PSYCHOPY_AVAILABLE:
             try:
-                # Standard initialization for an EyeLink tracker
-                self.tracker = pylink.EyeLink("100.1.1.1") 
+                # Eye tracker definition exactly as specified in the ABL lab manual
+                iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
+                eyetracker_config = dict()
+                eyetracker_config['name'] = 'tracker'
+                eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
+                eyetracker_config['simulation_mode'] = False
+                eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
+                
+                # NOTE: The manual sets this to "fname". You might want to dynamically 
+                # change this to your participant ID later so files don't overwrite!
+                eyetracker_config['default_native_data_file_name'] = "fname" 
+                
+                # Starting IO hub
+                self.io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
+                self.tracker = self.io.devices.tracker
+                
+                # At the start of an experiment
+                self.tracker.setConnectionState(True)
+                self.tracker.setRecordingState(True)
+                
                 self.connected = True
-                print("SUCCESS: Connected to EyeLink Tracker.")
+                print("SUCCESS: Connected to EyeLink Tracker via PsychoPy ioHub.")
             except Exception as e:
                 print(f"EyeLink Connection Failed: {e}")
         else:
-            print("pylink not installed. Running in dummy mode for testing.")
+            print("PsychoPy ioHub not installed. Running in dummy mode for testing.")
 
     def log_event(self, event_message):
         """Sends a synchronized timestamp trigger to the eye-tracker's data file."""
         if self.connected and self.tracker:
-
             self.tracker.sendMessage(f"TMT_EVENT: {event_message}")
         else:
-
             pass 
+
+    def disconnect(self):
+        """Safely shuts down tracking at the end of the experiment."""
+        if self.connected and self.tracker:
+            print("Disconnecting EyeLink...")
+            self.tracker.setConnectionState(False)
+            self.tracker.setRecordingState(False)
+            if self.io:
+                self.io.quit()
+            self.connected = False
 
 # ---------------------------
 
@@ -208,6 +226,10 @@ class HumanTMTSession:
             "duration_seconds": duration_seconds,
             "total_events": len(self.log_entries),
         })
+        
+        # Stop the eye tracker recording safely when the task is done
+        if self.eye_tracker:
+            self.eye_tracker.disconnect()
 
 class HumanTMTApp:
     def __init__(self, root):
