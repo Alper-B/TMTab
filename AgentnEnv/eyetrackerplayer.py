@@ -91,7 +91,9 @@ class TMTReplayApp:
 
         self.gaze_samples = []
         start_sync_time = None
-        sample_pattern = re.compile(r"^(\d+)\s+([\d\.]+)\s+([\d\.]+)")
+        
+        # FIX: More robust regex to handle leading spaces and negative numbers
+        sample_pattern = re.compile(r"^\s*(\d+)\s+([^\s]+)\s+([^\s]+)")
         msg_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+timer_started")
 
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -122,7 +124,7 @@ class TMTReplayApp:
                     match = sample_pattern.match(line.strip())
                     if match:
                         ts, x_str, y_str = match.groups()
-                        # ---> HERE IS THE FIX: SKIP THE BLINKS IN THE FALLBACK TOO! <---
+                        # Skip blinks in fallback loop
                         if x_str == "." or y_str == ".":
                             continue
                         if first_ts is None:
