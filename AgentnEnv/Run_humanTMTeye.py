@@ -31,9 +31,10 @@ class EyeTrackerController:
                 eyetracker_config['simulation_mode'] = False
                 eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
                 
-                # NOTE: The manual sets this to "fname". You might want to dynamically 
-                # change this to your participant ID later so files don't overwrite!
-                eyetracker_config['default_native_data_file_name'] = "fname" 
+                # NOTE: The EyeLink Host PC has a strict 8-character limit for filenames!
+                # Keep this short and alphanumeric. Your local JSONL file will still 
+                # safely log the full participant ID.
+                eyetracker_config['default_native_data_file_name'] = "TMT_DATA" 
                 
                 # Starting IO hub
                 self.io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
