@@ -34,7 +34,7 @@ class EyeTrackerController:
                 # NOTE: The EyeLink Host PC has a strict 8-character limit for filenames!
                 # Keep this short and alphanumeric. Your local JSONL file will still 
                 # safely log the full participant ID.
-                eyetracker_config['default_native_data_file_name'] = "TMT_DATA" 
+                eyetracker_config['default_native_data_file_name'] = "fname" 
                 
                 # Starting IO hub
                 self.io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
