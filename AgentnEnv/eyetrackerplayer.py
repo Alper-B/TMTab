@@ -10,13 +10,12 @@ class TMTReplayApp:
         self.root.title("TMT Experiment & Eye Gaze Visualizer")
         self.root.configure(bg="#2b2b2b")
 
-        # Get screen size to match original recording scaling
         screen_height = self.root.winfo_screenheight()
         self.canvas_size = int(screen_height * 0.85)
         self.node_radius = int(self.canvas_size * 0.025)
 
         self.events = []
-        self.gaze_samples = []  # List of (eye_timestamp, x, y)
+        self.gaze_samples = []
         self.layout = {}
         self.task_type = "A"
         
@@ -74,7 +73,6 @@ class TMTReplayApp:
         raw_layout = first_event.get("layout", [])
         self.layout = {targets[i]: raw_layout[i] for i in range(min(len(targets), len(raw_layout)))}
 
-        # Find duration
         for ev in reversed(self.events):
             if ev.get("elapsed_since_start_ms") is not None:
                 self.max_time_ms = ev["elapsed_since_start_ms"]
@@ -91,35 +89,47 @@ class TMTReplayApp:
 
         self.gaze_samples = []
         start_sync_time = None
-        sample_pattern = re.compile(r"^(\d+)\s+([\d\.]+)\s+([\d\.]+)")
-        msg_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+timer_started")
+        raw_samples = []
+
+        msg_pattern = re.compile(r"^MSG\s+(\d+)\s+(.+)")
 
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             for line in f:
-                # Synchronize start timestamp to t=0
-                msg_match = msg_pattern.match(line.strip())
-                if msg_match and start_sync_time is None:
-                    start_sync_time = int(msg_match.group(1))
+                line_str = line.strip()
+                if not line_str:
+                    continue
 
-                match = sample_pattern.match(line.strip())
-                if match:
-                    ts, x_str, y_str = match.groups()
-                    if start_sync_time is not None:
-                        rel_time = int(ts) - start_sync_time
-                        if rel_time >= 0:
-                            self.gaze_samples.append((rel_time, float(x_str), float(y_str)))
+                if line_str.startswith("MSG"):
+                    msg_match = msg_pattern.match(line_str)
+                    if msg_match and "timer_started" in msg_match.group(2) and start_sync_time is None:
+                        start_sync_time = int(msg_match.group(1))
+                    continue
 
-        # Fallback if no start marker found: use first sample as zero
-        if not self.gaze_samples and start_sync_time is None:
-            with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                first_ts = None
-                for line in f:
-                    match = sample_pattern.match(line.strip())
-                    if match:
-                        ts, x_str, y_str = match.groups()
-                        if first_ts is None:
-                            first_ts = int(ts)
-                        self.gaze_samples.append((int(ts) - first_ts, float(x_str), float(y_str)))
+                parts = line_str.split()
+                if len(parts) >= 3 and parts[0].isdigit():
+                    ts_str, x_str, y_str = parts[0], parts[1], parts[2]
+                    
+                    if x_str == "." or y_str == ".":
+                        continue
+                    
+                    try:
+                        ts = int(ts_str)
+                        gx = float(x_str)
+                        gy = float(y_str)
+                        raw_samples.append((ts, gx, gy))
+                    except ValueError:
+                        continue
+
+        if not raw_samples:
+            self.status_lbl.config(text="No valid gaze samples found in file.")
+            return
+
+        base_time = start_sync_time if start_sync_time is not None else raw_samples[0][0]
+        self.gaze_samples = [
+            (ts - base_time, gx, gy)
+            for (ts, gx, gy) in raw_samples
+            if (ts - base_time) >= 0
+        ]
 
         self.status_lbl.config(text=f"Loaded {len(self.gaze_samples)} synced gaze points")
 
@@ -170,7 +180,6 @@ class TMTReplayApp:
         if not self.is_playing:
             return
 
-        # 1. Determine completed nodes up to current time
         completed_count = 0
         latest_mouse = None
         for ev in self.events:
@@ -182,10 +191,8 @@ class TMTReplayApp:
             elif ev_t is not None and ev_t > self.current_time_ms:
                 break
 
-        # Redraw background & targets
         self._draw_layout(completed_count)
 
-        # 2. Draw recent Gaze Path (last 300 ms window)
         if self.gaze_samples:
             window_start = max(0, self.current_time_ms - 300)
             visible_gaze = [
@@ -193,7 +200,6 @@ class TMTReplayApp:
                 if window_start <= t <= self.current_time_ms
             ]
 
-            # EyeLink native coordinates mapped to Canvas center
             screen_w = self.root.winfo_screenwidth()
             screen_h = self.root.winfo_screenheight()
             offset_x = (screen_w - self.canvas_size) / 2
@@ -204,15 +210,13 @@ class TMTReplayApp:
                 cy = gy - offset_y
                 self.canvas.create_oval(cx - 3, cy - 3, cx + 3, cy + 3, fill="#ff3366", outline="")
 
-        # 3. Draw Mouse Position & Clicks
         if latest_mouse:
             mx, my, ev_type = latest_mouse
             color = "#00cc00" if ev_type == "correct_click" else "#3388ff"
             r = 7 if "click" in ev_type else 4
             self.canvas.create_oval(mx - r, my - r, mx + r, my + r, fill=color, outline="#000000")
 
-        # Step forward
-        step_interval = 25  # ms step
+        step_interval = 25
         self.current_time_ms += step_interval * self.playback_speed
 
         if self.max_time_ms > 0 and self.current_time_ms > self.max_time_ms:
