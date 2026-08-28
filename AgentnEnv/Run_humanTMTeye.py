@@ -240,8 +240,8 @@ class HumanTMTApp:
         self.root.attributes("-fullscreen", True)
         self.root.configure(bg="#2b2b2b") # Dark background for research focus
         
-        # Bind ESC to exit fullscreen safely
-        self.root.bind("<Escape>", lambda e: self.root.destroy())
+        # Bind ESC to exit fullscreen safely using the new shutdown method
+        self.root.bind("<Escape>", self._safe_exit)
 
         # Calculate a perfect square canvas based on 85% of screen height
         screen_height = self.root.winfo_screenheight()
@@ -282,7 +282,9 @@ class HumanTMTApp:
         ttk.Button(top_frame, text="Start TMT-B", command=lambda: self._start_task("B")).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Run Sequence", command=self._start_sequence).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Reset", command=self._reset_current_task).pack(side=tk.LEFT, padx=4)
-        ttk.Button(top_frame, text="Exit (ESC)", command=self.root.destroy).pack(side=tk.RIGHT)
+        
+        # Safe exit button
+        ttk.Button(top_frame, text="Exit (ESC)", command=self._safe_exit).pack(side=tk.RIGHT)
 
         info_frame = ttk.Frame(self.root, padding=(10, 0, 10, 10))
         info_frame.pack(fill=tk.X)
@@ -437,6 +439,21 @@ class HumanTMTApp:
             if distance <= self.node_radius + 4: # Small generous hit-box
                 return target
         return None
+        
+    def _safe_exit(self, event=None):
+        """Gracefully shut down the tracker and finalize logs before closing."""
+        self.status_text.set("Saving data and disconnecting EyeLink...")
+        self.root.update() # Force UI to show the message so you know it's working
+        
+        # Finalize the session if you exit mid-task
+        if self.session is not None and not self.session.provider.completed:
+            self.session.finalize()
+        # If no session is active but the tracker is connected, disconnect it
+        elif self.eye_tracker and self.eye_tracker.connected:
+            self.eye_tracker.disconnect()
+            
+        # Now it is safe to close the window
+        self.root.destroy()
 
     def run(self):
         self.root.mainloop()
