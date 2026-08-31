@@ -67,7 +67,7 @@ class EyeTrackerController:
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from enviromentTMT import TMTTaskProvider
+from TMTagent.enviromentTMT import TMTTaskProvider
 
 class SharedLayoutTMTTaskProvider:
     def __init__(self, task_type="A", layout=None):
@@ -209,6 +209,7 @@ class HumanTMTSession:
         self._write_event("miss_click", {"x": x, "y": y})
 
     def finalize(self):
+        """Finalizes the logs for this specific task session."""
         duration_seconds = None
         if self.started_timestamp is not None:
             duration_seconds = round(time.time() - self.started_timestamp, 3)
@@ -219,8 +220,7 @@ class HumanTMTSession:
             "total_events": len(self.log_entries),
         })
         
-        if self.eye_tracker:
-            self.eye_tracker.disconnect()
+        # REMOVED: Tracker disconnect logic used to be right here!
 
 class HumanTMTApp:
     def __init__(self, root):
@@ -246,9 +246,8 @@ class HumanTMTApp:
         self.session = None
         self.is_calibrating = False 
         
-        # New variables to manage click-based calibration states
         self.calibration_index = 0
-        self.calibration_step = 0 # 0 = waiting to log coordinate, 1 = waiting to advance dot
+        self.calibration_step = 0 
         self.current_calibration_task = None
         
         self.eye_tracker = EyeTrackerController()
@@ -312,7 +311,6 @@ class HumanTMTApp:
         self.status_text.set("Sequence mode: complete TMT-A, then TMT-B will start automatically.")
 
     def _start_calibration(self, task_type):
-        """Prepares the calibration state and draws the very first dot."""
         if self.session is not None and not self.session.provider.completed:
             self.session.finalize()
 
@@ -333,7 +331,6 @@ class HumanTMTApp:
         self._draw_current_calibration_dot()
 
     def _draw_current_calibration_dot(self):
-        """Draws the current dot based on the calibration_index and updates UI status."""
         self.canvas.delete("all")
         self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
 
@@ -355,7 +352,6 @@ class HumanTMTApp:
             fill="black"
         )
         
-        # Update the helper text so the user knows what step they are on
         if self.calibration_step == 0:
             self.status_text.set(f"Eye Calibration ({self.calibration_index + 1}/9): CLICK anywhere to LOG coordinates.")
         else:
@@ -435,10 +431,8 @@ class HumanTMTApp:
         self.session.log_mouse_move(event.x, event.y)
 
     def _handle_mouse_click(self, event):
-        # Intercept clicks for calibration!
         if self.is_calibrating:
             if self.calibration_step == 0:
-                # CLICK 1: Fire the message to the EyeLink!
                 x_pct, y_pct = self.calibration_points[self.calibration_index]
                 padding = self.canvas_size * 0.08
                 active_area = self.canvas_size - (padding * 2)
@@ -448,23 +442,20 @@ class HumanTMTApp:
                 if self.eye_tracker.connected:
                     self.eye_tracker.log_event(f"CALIBRATION_DOT_{self.calibration_index}_X:{canvas_x}_Y:{canvas_y}")
                 
-                # Move to the next step so the next click advances the dot
                 self.calibration_step = 1
-                self._draw_current_calibration_dot() # Redraws just to update the text label
+                self._draw_current_calibration_dot() 
                 
             elif self.calibration_step == 1:
-                # CLICK 2: Advance to the next dot
                 self.calibration_index += 1
-                self.calibration_step = 0 # Reset to waiting for log click
+                self.calibration_step = 0 
                 
                 if self.calibration_index >= len(self.calibration_points):
-                    # We finished all 9 dots! Launch the actual TMT task.
                     self.is_calibrating = False
                     self._start_task(self.current_calibration_task)
                 else:
                     self._draw_current_calibration_dot()
                     
-            return # Exit out completely so we don't accidentally log missed clicks for the actual task!
+            return 
 
         if self.session is None:
             return
@@ -516,7 +507,9 @@ class HumanTMTApp:
         
         if self.session is not None and not self.session.provider.completed:
             self.session.finalize()
-        elif self.eye_tracker and self.eye_tracker.connected:
+            
+        # The shutdown sequence is now securely living ONLY right here
+        if self.eye_tracker and self.eye_tracker.connected:
             self.eye_tracker.disconnect()
             
         self.root.destroy()
