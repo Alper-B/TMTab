@@ -48,10 +48,12 @@ class CognitiveTMTAgent:
         self.provider = TMTTaskProvider(task_type=task_type)
         self.targets = self.provider.targets
         
+        # Explicitly align starting position to exact center of Target 1
         self.gaze_x, self.gaze_y = self._get_screen_coords(self.targets[0])
         self.mouse_x, self.mouse_y = self.gaze_x, self.gaze_y
         
     def _get_screen_coords(self, target):
+        """Translates percentages to absolute pixel coordinates."""
         pct_x, pct_y = self.provider.get_target_coords(target)
         padding = self.canvas_size * 0.08
         active = self.canvas_size - (padding * 2)
@@ -81,7 +83,6 @@ class CognitiveTMTAgent:
         self.asc_lines.append(f"MSG\t{self.current_time_ms} TMT_EVENT: {msg}")
 
     def _execute_fixation(self, duration_ms, drift_mouse=False):
-        """Simulates the eye holding position. The hand can lazily drift toward the gaze."""
         start_time = self.current_time_ms
         self.asc_lines.append(f"SFIX R   {start_time}")
         
@@ -90,7 +91,6 @@ class CognitiveTMTAgent:
         
         for i in range(1, steps + 1):
             if drift_mouse:
-                # The "Lazy Mouse" fix: Hand drifts slightly toward where the eyes are looking (max 5% of distance)
                 t = i / steps
                 self.mouse_x = mx_start + (self.gaze_x - mx_start) * (t * 0.05)
                 self.mouse_y = my_start + (self.gaze_y - my_start) * (t * 0.05)
@@ -124,9 +124,7 @@ class CognitiveTMTAgent:
         self.asc_lines.append(f"ESACC R  {start_time}\t{end_time}\t{steps}\t{start_x:6.1f}\t{start_y:6.1f}\t{target_x:6.1f}\t{target_y:6.1f}\t{velocity:6.2f}\t    300")
 
     def _execute_mouse_move(self, target_x, target_y, duration_ms):
-        """Simulates hand moving the mouse while the eye maintains a fixation on the target."""
         start_time = self.current_time_ms
-        # The eye is fixated on the target while the hand catches up! (ASC Fix)
         self.asc_lines.append(f"SFIX R   {start_time}")
         
         start_x, start_y = self.mouse_x, self.mouse_y
@@ -143,6 +141,11 @@ class CognitiveTMTAgent:
             
             if self.current_time_ms % 10 == 0:
                 self._write_json_event("mouse_move", {"x": self.mouse_x, "y": self.mouse_y})
+
+        # CALIBRATION ENFORCEMENT: Eliminate floating-point drift at the end of the move
+        self.mouse_x = float(target_x)
+        self.mouse_y = float(target_y)
+        self._write_json_event("mouse_move", {"x": self.mouse_x, "y": self.mouse_y})
 
         end_time = self.current_time_ms - 1
         self.asc_lines.append(f"EFIX R   {start_time}\t{end_time}\t{int(duration_ms)}\t{self.gaze_x:6.1f}\t{self.gaze_y:6.1f}\t    300")
@@ -161,6 +164,8 @@ class CognitiveTMTAgent:
         self._log_asc_msg("timer_started")
         
         first_target = self.targets[0]
+        # Guarantee dead-center start before the very first click
+        self.mouse_x, self.mouse_y = self._get_screen_coords(first_target)
         self.provider.submit_action(first_target)
         self._write_json_event("correct_click", {"target": first_target, "x": self.mouse_x, "y": self.mouse_y, "current_target": first_target})
         self._log_asc_msg(f"correct_click_{self.task_type}_Target:{first_target}")
@@ -170,48 +175,34 @@ class CognitiveTMTAgent:
             current_target = self.targets[i]
             t_x, t_y = self._get_screen_coords(current_target)
             
-            # 1. WORKING MEMORY PHASE 
             mem_time = self.metrics.memory_speed * random.uniform(0.85, 1.15) 
             self._execute_fixation(mem_time)
             
-            # 2. SACCADIC SEARCH PHASE
             actual_saccades = max(1, int(random.gauss(self.metrics.saccades_per_target, 2)))
             time_per_saccade_cycle = self.metrics.search_speed / max(1, actual_saccades)
             
             remaining_nodes = self.provider.get_uncompleted_targets()
-            
-            # "Terminator Fix": Sort nodes by proximity to current gaze, adding a localized search heuristic
             sorted_nodes = sorted(remaining_nodes, key=lambda n: math.hypot(self._get_screen_coords(n)[0] - self.gaze_x, self._get_screen_coords(n)[1] - self.gaze_y))
-            # Grab the closest 1/3rd of remaining targets to scan through
             search_pool = sorted_nodes[:max(3, len(sorted_nodes)//3)] 
             
             for s in range(actual_saccades):
                 if s == actual_saccades - 1:
-                    # Final successful saccade to the actual target
                     self._execute_saccade(t_x, t_y, duration_ms=random.randint(25, 45))
-                    
-                    # 3. COGNITIVE REGISTRATION (Eye-Hand Coupling Fix)
-                    # The eye found it! Brain takes ~200ms to process and tell the hand to move.
                     registration_time = random.uniform(150, 250)
                     self._execute_fixation(registration_time)
                 else:
-                    # Peripheral Distractor search
                     dist_coords = self._get_screen_coords(random.choice(search_pool))
-                    # Add noise so we don't fixate dead-center on distractors
                     dx = dist_coords[0] + random.uniform(-50, 50)
                     dy = dist_coords[1] + random.uniform(-50, 50)
                     
                     self._execute_saccade(dx, dy, duration_ms=random.randint(20, 40))
-                    # Drift the hand while searching
                     self._execute_fixation(duration_ms=time_per_saccade_cycle * random.uniform(0.7, 1.1), drift_mouse=True)
 
             self.gaze_x, self.gaze_y = t_x, t_y
             
-            # 4. MOTOR EXECUTION PHASE
             mot_time = self.metrics.motor_speed * random.uniform(0.8, 1.2)
             self._execute_mouse_move(t_x, t_y, mot_time)
             
-            # 5. CLICK EVENT
             self._write_json_event("correct_click", {"target": current_target, "x": self.mouse_x, "y": self.mouse_y, "current_target": current_target})
             self._log_asc_msg(f"correct_click_{self.task_type}_Target:{current_target}")
             self.provider.submit_action(current_target)

@@ -6,6 +6,11 @@ from pathlib import Path
 import numpy as np
 import math
 
+# --- COGNITIVE ANALYSIS CONFIGURATION CONSTANTS ---
+AOI_RADIUS_MULTIPLIER = 2.5       # Multiplier for node radius to define the visual Area of Interest (AOI)
+MIN_FIXATION_MS = 100             # Minimum dwell time in milliseconds to count as a cognitive fixation
+SACCADE_VELOCITY_THRESHOLD = 0.5  # Minimum velocity (pixels/ms) to be classified as a rapid saccadic eye movement
+
 class TMTSession:
     def __init__(self, task_type):
         self.task_type = task_type
@@ -28,6 +33,12 @@ class TMTSession:
         self.gaze_offset_y = 0.0
         self.gaze_scale_x = 1.0
         self.gaze_scale_y = 1.0
+
+        # Mouse coordinate to percentage mapping
+        self.mouse_to_pct_m_x = 1.0
+        self.mouse_to_pct_b_x = 0.0
+        self.mouse_to_pct_m_y = 1.0
+        self.mouse_to_pct_b_y = 0.0
 
     def apply_calibration(self, raw_cx, raw_cy, center_cx, center_cy):
         if self.use_auto_calib:
@@ -114,7 +125,7 @@ class TMTReplayApp:
         speed_menu.bind("<<ComboboxSelected>>", self._change_speed)
         
         # --- THE MAGIC ANALYSIS BUTTON ---
-        self.analyze_btn = ttk.Button(row_play, text="🧠 Crunch Data", command=self._run_analysis)
+        self.analyze_btn = ttk.Button(row_play, text="Run Cognitive Analysis", command=self._run_analysis)
         self.analyze_btn.pack(side=tk.RIGHT, padx=10)
 
         canvas_container = tk.Frame(self.root, bg="#2b2b2b")
@@ -122,6 +133,32 @@ class TMTReplayApp:
         self.canvas = tk.Canvas(canvas_container, width=self.canvas_size, height=self.canvas_size, bg="#f5f5f5", highlightthickness=0)
         self.canvas.pack(pady=10)
         self.canvas.create_text(self.canvas_size/2, self.canvas_size/2, text="Load Data to Begin", font=("Segoe UI", 16, "bold"), fill="#aaaaaa")
+
+    def _calibrate_mouse_coordinates(self, session):
+        # Auto-maps recorded mouse space to percentage space using correct clicks
+        clicks = [ev for ev in session.events if ev.get("event_type") == "correct_click" and "target" in ev and "x" in ev and "y" in ev]
+        if len(clicks) < 2:
+            return
+
+        Ax, Bx = [], []
+        Ay, By = [], []
+        for c in clicks:
+            t_id = str(c["target"])
+            if t_id in session.layout:
+                pct_x, pct_y = session.layout[t_id]
+                Ax.append([c["x"], 1])
+                Bx.append(pct_x)
+                Ay.append([c["y"], 1])
+                By.append(pct_y)
+        
+        if len(Ax) >= 2:
+            coef_x, _, _, _ = np.linalg.lstsq(Ax, Bx, rcond=None)
+            session.mouse_to_pct_m_x = coef_x[0]
+            session.mouse_to_pct_b_x = coef_x[1]
+            
+            coef_y, _, _, _ = np.linalg.lstsq(Ay, By, rcond=None)
+            session.mouse_to_pct_m_y = coef_y[0]
+            session.mouse_to_pct_b_y = coef_y[1]
 
     def _load_jsonl(self, task_type):
         path = filedialog.askopenfilename(title=f"Select JSONL for TMT-{task_type}", filetypes=[("JSON Lines", "*.jsonl"), ("JSON files", "*.json")])
@@ -141,6 +178,7 @@ class TMTReplayApp:
                 session.max_time_ms = ev["elapsed_since_start_ms"]
                 break
         session.is_json_loaded = True
+        self._calibrate_mouse_coordinates(session)
         self._update_status_label(task_type)
 
     def _load_asc(self, task_type):
@@ -203,7 +241,6 @@ class TMTReplayApp:
         if session.is_asc_loaded: parts.append(f"Gaze: {len(session.gaze_samples)} pts")
         lbl.config(text=" | ".join(parts) if parts else "Waiting for files...")
 
-    # --- CALIBRATION POPUP METHODS (Unchanged, skipped for brevity in thought, kept in code) ---
     def _open_calibration_window(self, task_type):
         self.calib_active_task = task_type
         session = self.sessions[task_type]
@@ -282,20 +319,15 @@ class TMTReplayApp:
             self.calib_canvas.create_line(tcx, tcy, trans_cx, trans_cy, fill="#aaaaaa", dash=(4, 4))
             self.calib_canvas.create_oval(trans_cx-5, trans_cy-5, trans_cx+5, trans_cy+5, fill="#3388ff")
 
-    # --- END CALIBRATION POPUP ---
-
     def _get_node_canvas_pos(self, x, y):
         padding = self.canvas_size * 0.08
         active_area = self.canvas_size - (padding * 2)
         return int((x / 100.0) * active_area + padding), int((y / 100.0) * active_area + padding)
 
-    # --- ANALYSIS ENGINE ---
     def _run_analysis(self):
         """Processes the timelines to extract cognitive simulation metrics."""
         results = {}
-        # These are your manual parameters for the Visual Skip logic!
-        AOI_RADIUS = self.node_radius * 2.5 
-        MIN_FIXATION_MS = 100 
+        AOI_RADIUS = self.node_radius * AOI_RADIUS_MULTIPLIER 
         
         center_cx = self.canvas_size / 2
         offset_x = (self.root.winfo_screenwidth() - self.canvas_size) / 2
@@ -306,7 +338,6 @@ class TMTReplayApp:
             if not session.is_json_loaded or not session.is_asc_loaded:
                 continue
 
-            # 1. Grab all the correct clicks and map their real coordinates
             clicks = []
             for ev in session.events:
                 if ev.get("event_type") == "correct_click":
@@ -314,20 +345,17 @@ class TMTReplayApp:
                     cx, cy = self._get_node_canvas_pos(*session.layout[t_id])
                     clicks.append({"id": t_id, "time": ev["elapsed_since_start_ms"], "cx": cx, "cy": cy})
 
-            # 2. Pre-process and apply calibration to ALL gaze points so we aren't doing math twice
             calibrated_gaze = []
             for t, raw_x, raw_y in session.gaze_samples:
                 cx, cy = session.apply_calibration(raw_x - offset_x, raw_y - offset_y, center_cx, center_cx)
                 calibrated_gaze.append((t, cx, cy))
 
-            # Metrics accumulators
             task_memory_times = []
             task_search_times = []
             task_motor_times = []
             task_skips = 0
             task_search_saccades = []
 
-            # 3. The Timeline Slicer
             for i in range(1, len(clicks)):
                 prev_click = clicks[i-1]
                 curr_click = clicks[i]
@@ -335,11 +363,9 @@ class TMTReplayApp:
                 t_start = prev_click["time"]
                 t_end = curr_click["time"]
                 
-                # Snip the gaze array to just this segment
                 segment = [g for g in calibrated_gaze if t_start <= g[0] <= t_end]
                 if not segment: continue
 
-                # A. Working Memory Time (Dwell on previous node)
                 t_leave = t_start
                 for g in segment:
                     dist = math.hypot(g[1] - prev_click["cx"], g[2] - prev_click["cy"])
@@ -348,7 +374,6 @@ class TMTReplayApp:
                         break
                 task_memory_times.append(t_leave - t_start)
 
-                # B. Search Time & Visual Skip Probability
                 t_fix_start = None
                 fixation_timer = 0
                 last_g_time = t_leave
@@ -358,31 +383,26 @@ class TMTReplayApp:
                 for g in segment:
                     if g[0] < t_leave: continue
                     
-                    # Very crude saccade counter (velocity spike)
                     time_delta = g[0] - last_g_time
                     if time_delta > 0:
                         velocity = math.hypot(g[1] - segment[segment.index(g)-1][1], g[2] - segment[segment.index(g)-1][2]) / time_delta
-                        if velocity > 0.5: # 0.5 pixels per ms is a fast jerk
+                        if velocity > SACCADE_VELOCITY_THRESHOLD: 
                             saccade_count += 1
                     last_g_time = g[0]
 
-                    # Are we inside the target AOI?
                     dist = math.hypot(g[1] - curr_click["cx"], g[2] - curr_click["cy"])
                     if dist <= AOI_RADIUS:
                         if fixation_timer == 0:
                             fixation_start_t = g[0]
                         fixation_timer += time_delta
                         
-                        # We stayed long enough! Target registered.
                         if fixation_timer >= MIN_FIXATION_MS and t_fix_start is None:
                             t_fix_start = fixation_start_t
                     else:
-                        # We left the AOI. Was it a fly-by skip?
                         if 0 < fixation_timer < MIN_FIXATION_MS:
                             task_skips += 1
                         fixation_timer = 0
 
-                # If they magically clicked it without a formal fixation, just use the end time.
                 if t_fix_start is None: 
                     t_fix_start = t_end
 
@@ -420,7 +440,6 @@ class TMTReplayApp:
             ttk.Label(frame, text=f"Visual Skip Probability: {metrics['Total Skips']} occurrences").pack(anchor=tk.W)
             ttk.Label(frame, text=f"Avg Saccades per Search: {metrics['Saccades/Search']:.1f}").pack(anchor=tk.W)
 
-        # Calculate the Set-Shifting Delta (TMT-B - TMT-A)
         if "A" in results and "B" in results and results["A"] and results["B"]:
             shift_delta = (results["B"]["Search (ms)"] + results["B"]["Memory (ms)"]) - (results["A"]["Search (ms)"] + results["A"]["Memory (ms)"])
             
@@ -428,7 +447,6 @@ class TMTReplayApp:
             shift_frame.pack(fill=tk.X, padx=20, pady=10)
             ttk.Label(shift_frame, text=f"Set Shifting Time (shift_speed): {int(max(0, shift_delta))} ms", foreground="#ff4d4d", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W)
 
-    # --- Standard Playback Code Below ---
     def _draw_task_layout(self, session, completed_count=0):
         for idx, (target, coords) in enumerate(session.layout.items()):
             canvas_x, canvas_y = self._get_node_canvas_pos(coords[0], coords[1])
@@ -491,7 +509,13 @@ class TMTReplayApp:
                 self.canvas.create_oval(transformed_cx - 3, transformed_cy - 3, transformed_cx + 3, transformed_cy + 3, fill="#ff3366", outline="")
 
         if latest_mouse and self.current_time_ms >= 0:
-            mx, my, ev_type = latest_mouse
+            raw_mx, raw_my, ev_type = latest_mouse
+            
+            # Map raw coordinates to internal percentages, then back to the current canvas space
+            pct_x = raw_mx * session.mouse_to_pct_m_x + session.mouse_to_pct_b_x
+            pct_y = raw_my * session.mouse_to_pct_m_y + session.mouse_to_pct_b_y
+            mx, my = self._get_node_canvas_pos(pct_x, pct_y)
+            
             self.canvas.create_oval(mx - 4, my - 4, mx + 4, my + 4, fill="#00cc00" if ev_type == "correct_click" else "#3388ff", outline="#000000")
 
         step_interval = 25  
