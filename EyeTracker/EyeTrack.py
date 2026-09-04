@@ -1,526 +1,527 @@
 import json
-import sys
-import time
-from datetime import datetime
-from pathlib import Path
+import re
 import tkinter as tk
-from tkinter import ttk
+from tkinter import filedialog, ttk
+from pathlib import Path
+import numpy as np
 
-# --- EYELINK PSYCHOPY IMPLEMENTATION ---
-try:
-    from psychopy.iohub import launchHubServer
-    PSYCHOPY_AVAILABLE = True
-except ImportError:
-    PSYCHOPY_AVAILABLE = False
-
-class EyeTrackerController:
-    """Handles communication with the ABL EyeLink Host PC using PsychoPy ioHub."""
-    def __init__(self):
-        self.connected = False
-        self.tracker = None
-        self.io = None
-        
-    def connect(self):
-        if PSYCHOPY_AVAILABLE:
-            try:
-                iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
-                eyetracker_config = dict()
-                eyetracker_config['name'] = 'tracker'
-                eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
-                eyetracker_config['simulation_mode'] = False
-                eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
-                
-                eyetracker_config['default_native_data_file_name'] = "fname" 
-                
-                self.io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
-                self.tracker = self.io.devices.tracker
-                
-                self.tracker.setConnectionState(True)
-                self.tracker.setRecordingState(True)
-                
-                self.connected = True
-                print("SUCCESS: Connected to EyeLink Tracker via PsychoPy ioHub.")
-            except Exception as e:
-                print(f"EyeLink Connection Failed: {e}")
-        else:
-            print("PsychoPy ioHub not installed. Running in dummy mode for testing.")
-
-    def log_event(self, event_message):
-        """Sends a synchronized timestamp trigger to the eye-tracker's data file."""
-        if self.connected and self.tracker:
-            self.tracker.sendMessage(f"TMT_EVENT: {event_message}")
-        else:
-            pass 
-
-    def disconnect(self):
-        """Safely shuts down tracking at the end of the experiment."""
-        if self.connected and self.tracker:
-            print("Disconnecting EyeLink...")
-            self.tracker.setConnectionState(False)
-            self.tracker.setRecordingState(False)
-            if self.io:
-                self.io.quit()
-            self.connected = False
-
-# ---------------------------
-
-if __package__ in {None, ""}:
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from TMTagent.enviromentTMT import TMTTaskProvider
-
-class SharedLayoutTMTTaskProvider:
-    def __init__(self, task_type="A", layout=None):
-        self.provider = TMTTaskProvider(task_type=task_type)
-        if layout is not None:
-            self.provider.nodes = {target: tuple(layout[target]) for target in self.provider.targets}
-        self.task_type = self.provider.task_type
-        self.targets = self.provider.targets
-
-    def get_current_target(self):
-        return self.provider.get_current_target()
-
-    def get_target_coords(self, target):
-        return self.provider.get_target_coords(target)
-
-    def submit_action(self, target):
-        return self.provider.submit_action(target)
-
-    def get_uncompleted_targets(self):
-        return self.provider.get_uncompleted_targets()
-
-    @property
-    def current_index(self):
-        return self.provider.current_index
-
-    @property
-    def completed(self):
-        return self.provider.completed
-
-class HumanTMTSession:
-    def __init__(self, task_type="A", participant_id="participant", log_path=None, shared_layout=None, eye_tracker=None):
+class TMTSession:
+    """Encapsulates all data and calibration states for a single TMT task."""
+    def __init__(self, task_type):
         self.task_type = task_type
-        self.participant_id = participant_id
-        self.provider = SharedLayoutTMTTaskProvider(task_type=task_type, layout=shared_layout)
-        self.eye_tracker = eye_tracker
-        self.score = 0
-        self.errors = 0
-        self.started_at = datetime.now().isoformat(timespec="seconds")
-        self.started_timestamp = None
-        self.last_correct_timestamp = None
-        self.prev_event_ts = None
-        self.started = False
-        self.log_entries = []
+        self.events = []
+        self.gaze_samples = []  
+        self.calib_events = []  
+        self.calib_gaze_matches = [] 
+        self.layout = {}
+        
+        self.max_time_ms = 0
+        self.min_time_ms = 0 
+        self.is_json_loaded = False
+        self.is_asc_loaded = False
 
-        if log_path is None:
-            base_dir = Path(__file__).resolve().parent / "logs"
-            base_dir.mkdir(parents=True, exist_ok=True)
-            stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            self.log_path = base_dir / f"{participant_id}_{task_type}_{stamp}.jsonl"
+        # --- Calibration Transformation Variables ---
+        self.use_auto_calib = False
+        self.calib_coef_x = [0, 1, 0, 0, 0, 0] 
+        self.calib_coef_y = [0, 0, 1, 0, 0, 0] 
+        
+        # Manual Affine Fallbacks
+        self.gaze_offset_x = 0.0
+        self.gaze_offset_y = 0.0
+        self.gaze_scale_x = 1.0
+        self.gaze_scale_y = 1.0
+
+    def apply_calibration(self, raw_cx, raw_cy, center_cx, center_cy):
+        """Routes coordinates through the task's specific calibration math."""
+        if self.use_auto_calib:
+            x, y = raw_cx, raw_cy
+            cx = (self.calib_coef_x[0] + 
+                  self.calib_coef_x[1]*x + 
+                  self.calib_coef_x[2]*y + 
+                  self.calib_coef_x[3]*(x**2) + 
+                  self.calib_coef_x[4]*(y**2) + 
+                  self.calib_coef_x[5]*x*y)
+                  
+            cy = (self.calib_coef_y[0] + 
+                  self.calib_coef_y[1]*x + 
+                  self.calib_coef_y[2]*y + 
+                  self.calib_coef_y[3]*(x**2) + 
+                  self.calib_coef_y[4]*(y**2) + 
+                  self.calib_coef_y[5]*x*y)
+            return cx, cy
         else:
-            self.log_path = Path(log_path)
-            self.log_path.parent.mkdir(parents=True, exist_ok=True)
+            cx = ((raw_cx - center_cx) * self.gaze_scale_x) + center_cx + self.gaze_offset_x
+            cy = ((raw_cy - center_cy) * self.gaze_scale_y) + center_cy + self.gaze_offset_y
+            return cx, cy
 
-        self._write_event("task_started", {
-            "task_type": task_type,
-            "targets": self.provider.targets,
-            "layout": [list(self.provider.get_target_coords(target)) for target in self.provider.targets],
-        })
-
-    def _write_event(self, event_type, payload):
-        now_ts = time.time()
-        elapsed_since_start_ms = None
-        event_delta_ms = None
-        
-        if self.started_timestamp is not None:
-            elapsed_since_start_ms = round((now_ts - self.started_timestamp) * 1000, 3)
-        if self.prev_event_ts is not None:
-            event_delta_ms = round((now_ts - self.prev_event_ts) * 1000, 3)
-        self.prev_event_ts = now_ts
-
-        entry = {
-            "timestamp": datetime.now().isoformat(timespec="milliseconds"),
-            "event_type": event_type,
-            "task_type": self.task_type,
-            "participant_id": self.participant_id,
-            "score": self.score,
-            "errors": self.errors,
-            "current_target": self.provider.get_current_target(),
-            "completed_count": self.provider.current_index,
-            "completed": self.provider.completed,
-            "elapsed_since_start_ms": elapsed_since_start_ms,
-            "event_delta_ms": event_delta_ms,
-            **payload,
-        }
-        
-        self.log_entries.append(entry)
-        with open(self.log_path, "a", encoding="utf-8") as handle:
-            handle.write(json.dumps(entry, default=str) + "\n")
-            
-        if self.eye_tracker and event_type != "mouse_move":
-            self.eye_tracker.log_event(f"{event_type}_{self.task_type}_Target:{self.provider.get_current_target()}")
-
-    def start_timer(self):
-        if not self.started:
-            self.started_timestamp = time.time()
-            self.started = True
-            self._write_event("timer_started", {})
-
-    def log_mouse_move(self, x, y):
-        self._write_event("mouse_move", {"x": x, "y": y})
-
-    def submit_click(self, target, x, y):
-        expected_target = self.provider.get_current_target()
-        if self.provider.completed:
-            self._write_event("click_after_completion", {"x": x, "y": y, "target": target})
-            return False
-
-        if target == expected_target:
-            if self.provider.current_index == 0 and not self.started:
-                self.start_timer()
-
-            success = self.provider.submit_action(target)
-            if success:
-                self.score += 1
-                now_ts = time.time()
-                correct_interval_ms = None
-                if self.last_correct_timestamp is not None:
-                    correct_interval_ms = round((now_ts - self.last_correct_timestamp) * 1000, 3)
-                self.last_correct_timestamp = now_ts
-
-                self._write_event("correct_click", {
-                    "x": x,
-                    "y": y,
-                    "target": target,
-                    "expected_target": expected_target,
-                    "correct_interval_ms": correct_interval_ms,
-                })
-                
-                if self.provider.completed:
-                    self._write_event("task_completed", {"final_score": self.score, "final_errors": self.errors})
-                return True
-
-        self.errors += 1
-        self._write_event("incorrect_click", {"x": x, "y": y, "target": target, "expected_target": expected_target})
-        return False
-
-    def log_miss_click(self, x, y):
-        self.errors += 1
-        self._write_event("miss_click", {"x": x, "y": y})
-
-    def finalize(self):
-        """Finalizes the logs for this specific task session."""
-        duration_seconds = None
-        if self.started_timestamp is not None:
-            duration_seconds = round(time.time() - self.started_timestamp, 3)
-        self._write_event("task_summary", {
-            "final_score": self.score,
-            "final_errors": self.errors,
-            "duration_seconds": duration_seconds,
-            "total_events": len(self.log_entries),
-        })
-        
-        # REMOVED: Tracker disconnect logic used to be right here!
-
-class HumanTMTApp:
+class TMTReplayApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Human TMT Recorder - Lab Edition")
-        
-        self.root.attributes("-fullscreen", True)
+        self.root.title("TMT Dual-Session Visualizer & Analyzer")
         self.root.configure(bg="#2b2b2b")
-        self.root.bind("<Escape>", self._safe_exit)
 
         screen_height = self.root.winfo_screenheight()
         self.canvas_size = int(screen_height * 0.85)
         self.node_radius = int(self.canvas_size * 0.025)
 
-        self.participant_name = tk.StringVar(value="participant")
-        self.task_label = tk.StringVar(value="TMT-A")
-        self.status_text = tk.StringVar(value="Start a task to begin recording")
-        self.current_target_text = tk.StringVar(value="Current target: --")
-
-        self.shared_layout = None
-        self.task_layouts = {}
-        self.sequence_mode = False
-        self.session = None
-        self.is_calibrating = False 
+        self.sessions = {
+            "A": TMTSession("A"),
+            "B": TMTSession("B")
+        }
         
-        self.calibration_index = 0
-        self.calibration_step = 0 
-        self.current_calibration_task = None
-        
-        self.eye_tracker = EyeTrackerController()
-        self.eye_tracker.connect()
+        self.active_task = "A" 
+        self.play_mode = "A" 
+        self.current_time_ms = 0
+        self.is_playing = False
+        self.playback_speed = 1.0
+        self.calib_active_task = None 
 
         self._build_ui()
-        self._initialize_layout()
-        
-        self._start_calibration("A")
 
     def _build_ui(self):
-        style = ttk.Style()
-        style.configure("TFrame", background="#2b2b2b")
-        style.configure("TLabel", background="#2b2b2b", foreground="white")
+        control_frame = ttk.Frame(self.root, padding=10)
+        control_frame.pack(fill=tk.X)
+
+        # --- TMT-A Row ---
+        row_a = ttk.Frame(control_frame)
+        row_a.pack(fill=tk.X, pady=2)
+        ttk.Label(row_a, text="TMT-A:", font=("Segoe UI", 10, "bold"), width=8).pack(side=tk.LEFT)
+        ttk.Button(row_a, text="Load JSONL", command=lambda: self._load_jsonl("A")).pack(side=tk.LEFT, padx=4)
+        ttk.Button(row_a, text="Load ASC", command=lambda: self._load_asc("A")).pack(side=tk.LEFT, padx=4)
+        self.calib_btn_a = ttk.Button(row_a, text="Align Calibration", command=lambda: self._open_calibration_window("A"), state=tk.DISABLED)
+        self.calib_btn_a.pack(side=tk.LEFT, padx=4)
+        self.status_lbl_a = ttk.Label(row_a, text="Waiting for files...", foreground="#4da6ff")
+        self.status_lbl_a.pack(side=tk.LEFT, padx=10)
+
+        # --- TMT-B Row ---
+        row_b = ttk.Frame(control_frame)
+        row_b.pack(fill=tk.X, pady=2)
+        ttk.Label(row_b, text="TMT-B:", font=("Segoe UI", 10, "bold"), width=8).pack(side=tk.LEFT)
+        ttk.Button(row_b, text="Load JSONL", command=lambda: self._load_jsonl("B")).pack(side=tk.LEFT, padx=4)
+        ttk.Button(row_b, text="Load ASC", command=lambda: self._load_asc("B")).pack(side=tk.LEFT, padx=4)
+        self.calib_btn_b = ttk.Button(row_b, text="Align Calibration", command=lambda: self._open_calibration_window("B"), state=tk.DISABLED)
+        self.calib_btn_b.pack(side=tk.LEFT, padx=4)
+        self.status_lbl_b = ttk.Label(row_b, text="Waiting for files...", foreground="#4da6ff")
+        self.status_lbl_b.pack(side=tk.LEFT, padx=10)
+
+        ttk.Separator(control_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
+
+        # --- Playback Row ---
+        row_play = ttk.Frame(control_frame)
+        row_play.pack(fill=tk.X, pady=2)
         
-        top_frame = ttk.Frame(self.root, padding=10)
-        top_frame.pack(fill=tk.X)
-
-        ttk.Label(top_frame, text="Participant:").pack(side=tk.LEFT)
-        participant_entry = ttk.Entry(top_frame, textvariable=self.participant_name, width=15)
-        participant_entry.pack(side=tk.LEFT, padx=6)
-
-        ttk.Button(top_frame, text="Start TMT-A", command=lambda: self._start_calibration("A")).pack(side=tk.LEFT, padx=4)
-        ttk.Button(top_frame, text="Start TMT-B", command=lambda: self._start_calibration("B")).pack(side=tk.LEFT, padx=4)
-        ttk.Button(top_frame, text="Run Sequence", command=self._start_sequence).pack(side=tk.LEFT, padx=4)
-        ttk.Button(top_frame, text="Reset", command=self._reset_current_task).pack(side=tk.LEFT, padx=4)
+        ttk.Label(row_play, text="Playback:", font=("Segoe UI", 10, "bold"), width=8).pack(side=tk.LEFT)
         
-        ttk.Button(top_frame, text="Exit (ESC)", command=self._safe_exit).pack(side=tk.RIGHT)
+        self.play_a_btn = ttk.Button(row_play, text="Play A Only", command=lambda: self._start_playback("A"))
+        self.play_a_btn.pack(side=tk.LEFT, padx=4)
+        
+        self.play_b_btn = ttk.Button(row_play, text="Play B Only", command=lambda: self._start_playback("B"))
+        self.play_b_btn.pack(side=tk.LEFT, padx=4)
+        
+        self.play_seq_btn = ttk.Button(row_play, text="Play Sequence (A → B)", command=lambda: self._start_playback("Seq"))
+        self.play_seq_btn.pack(side=tk.LEFT, padx=4)
 
-        info_frame = ttk.Frame(self.root, padding=(10, 0, 10, 10))
-        info_frame.pack(fill=tk.X)
-        ttk.Label(info_frame, textvariable=self.task_label, font=("Segoe UI", 14, "bold")).pack(side=tk.LEFT)
-        ttk.Label(info_frame, textvariable=self.current_target_text, font=("Segoe UI", 12)).pack(side=tk.LEFT, padx=16)
-        ttk.Label(info_frame, textvariable=self.status_text, foreground="#4da6ff", font=("Segoe UI", 12)).pack(side=tk.LEFT, padx=16)
+        ttk.Button(row_play, text="Stop / Reset", command=self._reset_playback).pack(side=tk.LEFT, padx=15)
 
+        ttk.Label(row_play, text="Speed:").pack(side=tk.LEFT, padx=(10, 2))
+        self.speed_var = tk.StringVar(value="1.0x")
+        speed_menu = ttk.Combobox(row_play, textvariable=self.speed_var, values=["0.5x", "1.0x", "2.0x", "4.0x"], width=5)
+        speed_menu.pack(side=tk.LEFT)
+        speed_menu.bind("<<ComboboxSelected>>", self._change_speed)
+
+        # --- Canvas ---
         canvas_container = tk.Frame(self.root, bg="#2b2b2b")
         canvas_container.pack(fill=tk.BOTH, expand=True)
 
         self.canvas = tk.Canvas(canvas_container, width=self.canvas_size, height=self.canvas_size, bg="#f5f5f5", highlightthickness=0)
-        self.canvas.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-        
-        self.canvas.bind("<Motion>", self._handle_mouse_move)
-        self.canvas.bind("<Button-1>", self._handle_mouse_click)
+        self.canvas.pack(pady=10)
+        self.canvas.create_text(self.canvas_size/2, self.canvas_size/2, text="Load Data to Begin", font=("Segoe UI", 16, "bold"), fill="#aaaaaa")
 
-    def _initialize_layout(self):
-        base_nodes = TMTTaskProvider(task_type="A").nodes
-        ordered_positions = [base_nodes[str(i)] for i in range(1, 26)]
-
-        tmt_a_layout = {str(i): ordered_positions[i - 1] for i in range(1, 26)}
-        tmt_b_targets = ["1", "A", "2", "B", "3", "C", "4", "D", "5", "E", "6", "F", "7", "G", "8", "H", "9", "I", "10", "J", "11", "K", "12", "L", "13"]
-        tmt_b_layout = {tmt_b_targets[idx]: ordered_positions[idx] for idx in range(len(tmt_b_targets))}
-
-        self.shared_layout = {
-            "A": tmt_a_layout,
-            "B": tmt_b_layout,
-        }
-
-    def _start_sequence(self):
-        self.sequence_mode = True
-        self._start_calibration("A")
-        self.status_text.set("Sequence mode: complete TMT-A, then TMT-B will start automatically.")
-
-    def _start_calibration(self, task_type):
-        if self.session is not None and not self.session.provider.completed:
-            self.session.finalize()
-
-        self.is_calibrating = True
-        self.calibration_index = 0
-        self.calibration_step = 0
-        self.current_calibration_task = task_type
-        
-        self.task_label.set("Calibration")
-        self.current_target_text.set("")
-        
-        self.calibration_points = [
-            (0, 0),    (50, 0),    (100, 0),
-            (0, 50),   (50, 50),   (100, 50),
-            (0, 100),  (50, 100),  (100, 100)
-        ]
-        
-        self._draw_current_calibration_dot()
-
-    def _draw_current_calibration_dot(self):
-        self.canvas.delete("all")
-        self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
-
-        x_pct, y_pct = self.calibration_points[self.calibration_index]
-        padding = self.canvas_size * 0.08
-        active_area = self.canvas_size - (padding * 2)
-        
-        canvas_x = int((x_pct / 100.0) * active_area + padding)
-        canvas_y = int((y_pct / 100.0) * active_area + padding)
-
-        self.canvas.create_oval(
-            canvas_x - self.node_radius, canvas_y - self.node_radius,
-            canvas_x + self.node_radius, canvas_y + self.node_radius,
-            fill="#ff4d4d", outline="#cc0000", width=2
-        )
-        self.canvas.create_oval(
-            canvas_x - 3, canvas_y - 3,
-            canvas_x + 3, canvas_y + 3,
-            fill="black"
-        )
-        
-        if self.calibration_step == 0:
-            self.status_text.set(f"Eye Calibration ({self.calibration_index + 1}/9): CLICK anywhere to LOG coordinates.")
-        else:
-            self.status_text.set(f"Eye Calibration ({self.calibration_index + 1}/9): Logged! CLICK anywhere to ADVANCE to next dot.")
-
-    def _start_task(self, task_type):
-        self.session = HumanTMTSession(
-            task_type=task_type,
-            participant_id=self.participant_name.get().strip() or "participant",
-            shared_layout=self.shared_layout[task_type],
-            eye_tracker=self.eye_tracker 
-        )
-        self.task_label.set(f"TMT-{task_type}")
-        self.current_target_text.set(f"Current target: {self.session.provider.get_current_target()}")
-        self.status_text.set("Calibration Complete! Click the next target node in the correct sequence.")
-        self._redraw_canvas()
-
-    def _reset_current_task(self):
-        if self.is_calibrating:
-            return 
-        
-        if self.session is None:
+    def _load_jsonl(self, task_type):
+        path = filedialog.askopenfilename(title=f"Select JSONL for TMT-{task_type}", filetypes=[("JSON Lines", "*.jsonl"), ("JSON files", "*.json")])
+        if not path:
             return
-        task_type = self.session.task_type
-        self._start_calibration(task_type)
 
-    def _redraw_canvas(self):
-        self.canvas.delete("all")
-        self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
+        session = self.sessions[task_type]
+        session.events = []
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    session.events.append(json.loads(line))
 
-        provider = self.session.provider
-        completed_count = provider.current_index
-        current_target = provider.get_current_target()
+        if not session.events:
+            return
 
+        first_event = session.events[0]
+        targets = first_event.get("targets", [])
+        raw_layout = first_event.get("layout", [])
+        session.layout = {targets[i]: raw_layout[i] for i in range(min(len(targets), len(raw_layout)))}
+
+        for ev in reversed(session.events):
+            if ev.get("elapsed_since_start_ms") is not None:
+                session.max_time_ms = ev["elapsed_since_start_ms"]
+                break
+
+        session.is_json_loaded = True
+        self._update_status_label(task_type)
+
+    def _load_asc(self, task_type):
+        path = filedialog.askopenfilename(title=f"Select ASC for TMT-{task_type}", filetypes=[("EyeLink ASC files", "*.asc"), ("Text files", "*.txt")])
+        if not path:
+            return
+
+        session = self.sessions[task_type]
+        session.gaze_samples = []
+        session.calib_events = []
+        session.calib_gaze_matches = []
+        
+        sample_pattern = re.compile(r"^\s*(\d+)\s+([^\s]+)\s+([^\s]+)")
+        msg_timer_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+timer_started")
+        msg_calib_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+CALIBRATION_DOT_(\d+)_X:(\d+)_Y:(\d+)")
+
+        sync_time = None
+        first_ts = None
+        
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                s = line.strip()
+                timer_match = msg_timer_pattern.match(s)
+                if timer_match:
+                    sync_time = int(timer_match.group(1))
+                    break
+                if not first_ts:
+                    match = sample_pattern.match(s)
+                    if match:
+                        first_ts = int(match.group(1))
+
+        if sync_time is None:
+            sync_time = first_ts if first_ts else 0
+
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                s = line.strip()
+                
+                calib_match = msg_calib_pattern.match(s)
+                if calib_match:
+                    ts = int(calib_match.group(1)) - sync_time
+                    idx = int(calib_match.group(2))
+                    cx = int(calib_match.group(3))
+                    cy = int(calib_match.group(4))
+                    session.calib_events.append((ts, idx, cx, cy))
+                    continue
+
+                match = sample_pattern.match(s)
+                if match:
+                    ts, x_str, y_str = match.groups()
+                    if x_str == "." or y_str == ".":
+                        continue
+                    rel_time = int(ts) - sync_time
+                    try:
+                        session.gaze_samples.append((rel_time, float(x_str), float(y_str)))
+                    except ValueError:
+                        pass
+
+        if session.gaze_samples:
+            session.min_time_ms = session.gaze_samples[0][0]
+        else:
+            session.min_time_ms = 0
+
+        if session.gaze_samples and session.calib_events:
+            screen_w = self.root.winfo_screenwidth()
+            screen_h = self.root.winfo_screenheight()
+            offset_x = (screen_w - self.canvas_size) / 2
+            offset_y = (screen_h - self.canvas_size) / 2
+
+            for ct, idx, cx, cy in session.calib_events:
+                closest_gaze = min(session.gaze_samples, key=lambda g: abs(g[0] - ct))
+                
+                raw_cx = closest_gaze[1] - offset_x
+                raw_cy = closest_gaze[2] - offset_y
+                
+                session.calib_gaze_matches.append({
+                    "ts": ct, "idx": idx,
+                    "target_cx": cx, "target_cy": cy,
+                    "raw_cx": raw_cx, "raw_cy": raw_cy
+                })
+            
+            if task_type == "A":
+                self.calib_btn_a.config(state=tk.NORMAL) 
+            else:
+                self.calib_btn_b.config(state=tk.NORMAL)
+
+        session.is_asc_loaded = True
+        self._update_status_label(task_type)
+
+    def _update_status_label(self, task_type):
+        session = self.sessions[task_type]
+        lbl = self.status_lbl_a if task_type == "A" else self.status_lbl_b
+        
+        parts = []
+        if session.is_json_loaded:
+            parts.append(f"Logs: {len(session.events)} ev")
+        if session.is_asc_loaded:
+            parts.append(f"Gaze: {len(session.gaze_samples)} pts")
+            
+        if not parts:
+            lbl.config(text="Waiting for files...")
+        else:
+            lbl.config(text=" | ".join(parts))
+
+    def _open_calibration_window(self, task_type):
+        self.calib_active_task = task_type
+        session = self.sessions[task_type]
+        
+        if not session.calib_gaze_matches:
+            return
+
+        calib_win = tk.Toplevel(self.root)
+        calib_win.title(f"Gaze Calibration Alignment - TMT-{task_type}")
+        calib_win.geometry(f"{self.canvas_size + 350}x{self.canvas_size + 50}")
+        calib_win.configure(bg="#2b2b2b")
+
+        ctrl_frame = ttk.Frame(calib_win, padding=10)
+        ctrl_frame.pack(side=tk.LEFT, fill=tk.Y)
+        
+        ttk.Button(ctrl_frame, text="✨ Auto Calibrate (Optimal Fit)", command=self._run_auto_calibration).pack(pady=(10, 30), fill=tk.X)
+
+        ttk.Label(ctrl_frame, text="--- Manual Overrides ---").pack(pady=(0, 10))
+
+        ttk.Label(ctrl_frame, text="X Offset (px):").pack()
+        self.ox_scale = ttk.Scale(ctrl_frame, from_=-500, to=500, orient=tk.HORIZONTAL, command=self._manual_slider_update)
+        self.ox_scale.set(session.gaze_offset_x)
+        self.ox_scale.pack(fill=tk.X)
+
+        ttk.Label(ctrl_frame, text="Y Offset (px):").pack(pady=(10, 0))
+        self.oy_scale = ttk.Scale(ctrl_frame, from_=-500, to=500, orient=tk.HORIZONTAL, command=self._manual_slider_update)
+        self.oy_scale.set(session.gaze_offset_y)
+        self.oy_scale.pack(fill=tk.X)
+
+        ttk.Label(ctrl_frame, text="X Scale (Multiplier):").pack(pady=(20, 0))
+        self.sx_scale = ttk.Scale(ctrl_frame, from_=0.5, to=2.0, orient=tk.HORIZONTAL, command=self._manual_slider_update)
+        self.sx_scale.set(session.gaze_scale_x)
+        self.sx_scale.pack(fill=tk.X)
+
+        ttk.Label(ctrl_frame, text="Y Scale (Multiplier):").pack(pady=(10, 0))
+        self.sy_scale = ttk.Scale(ctrl_frame, from_=0.5, to=2.0, orient=tk.HORIZONTAL, command=self._manual_slider_update)
+        self.sy_scale.set(session.gaze_scale_y)
+        self.sy_scale.pack(fill=tk.X)
+        
+        mode_text = "Mode: Auto (Polynomial Fit)" if session.use_auto_calib else "Mode: Manual (Linear)"
+        color = "#00cc00" if session.use_auto_calib else "#ffaa00"
+        self.calib_status_lbl = ttk.Label(ctrl_frame, text=mode_text, foreground=color)
+        self.calib_status_lbl.pack(pady=20)
+
+        ttk.Button(ctrl_frame, text="Reset to Default", command=self._reset_calib_sliders).pack(pady=10)
+        ttk.Button(ctrl_frame, text="Apply & Close", command=calib_win.destroy).pack(pady=10)
+        
+        ttk.Label(ctrl_frame, text="Target Dot", foreground="#ff4d4d").pack(pady=(20, 0))
+        ttk.Label(ctrl_frame, text="Eye Gaze", foreground="#3388ff").pack()
+
+        self.calib_canvas = tk.Canvas(calib_win, width=self.canvas_size, height=self.canvas_size, bg="#f5f5f5", highlightthickness=0)
+        self.calib_canvas.pack(side=tk.RIGHT, padx=10, pady=10)
+
+        self._redraw_calib_preview()
+
+    def _run_auto_calibration(self):
+        session = self.sessions[self.calib_active_task]
+        A = []
+        Bx = []
+        By = []
+        
+        for match in session.calib_gaze_matches:
+            x = match["raw_cx"]
+            y = match["raw_cy"]
+            A.append([1, x, y, x**2, y**2, x*y])
+            Bx.append(match["target_cx"])
+            By.append(match["target_cy"])
+            
+        A = np.array(A)
+        Bx = np.array(Bx)
+        By = np.array(By)
+        
+        coef_x, _, _, _ = np.linalg.lstsq(A, Bx, rcond=None)
+        coef_y, _, _, _ = np.linalg.lstsq(A, By, rcond=None)
+        
+        session.calib_coef_x = coef_x
+        session.calib_coef_y = coef_y
+        session.use_auto_calib = True
+        
+        self.calib_status_lbl.config(text="Mode: Auto (Polynomial Fit)", foreground="#00cc00")
+        self._redraw_calib_preview()
+
+    def _manual_slider_update(self, event=None):
+        session = self.sessions[self.calib_active_task]
+        session.use_auto_calib = False
+        self.calib_status_lbl.config(text="Mode: Manual (Linear)", foreground="#ffaa00")
+        session.gaze_offset_x = self.ox_scale.get()
+        session.gaze_offset_y = self.oy_scale.get()
+        session.gaze_scale_x = self.sx_scale.get()
+        session.gaze_scale_y = self.sy_scale.get()
+        self._redraw_calib_preview()
+
+    def _reset_calib_sliders(self):
+        session = self.sessions[self.calib_active_task]
+        session.use_auto_calib = False
+        self.calib_status_lbl.config(text="Mode: Manual (Linear)", foreground="#ffaa00")
+        self.ox_scale.set(0)
+        self.oy_scale.set(0)
+        self.sx_scale.set(1.0)
+        self.sy_scale.set(1.0)
+        self._manual_slider_update()
+
+    def _redraw_calib_preview(self, event=None):
+        session = self.sessions[self.calib_active_task]
+        self.calib_canvas.delete("all")
+        self.calib_canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
+
+        center_cx = self.canvas_size / 2
+        center_cy = self.canvas_size / 2
+
+        for match in session.calib_gaze_matches:
+            tcx, tcy = match["target_cx"], match["target_cy"]
+            self.calib_canvas.create_oval(tcx-8, tcy-8, tcx+8, tcy+8, outline="#ff4d4d", width=2)
+            self.calib_canvas.create_text(tcx, tcy-15, text=str(match["idx"]+1), fill="#cc0000", font=("Arial", 10, "bold"))
+
+            transformed_cx, transformed_cy = session.apply_calibration(match["raw_cx"], match["raw_cy"], center_cx, center_cy)
+
+            self.calib_canvas.create_line(tcx, tcy, transformed_cx, transformed_cy, fill="#aaaaaa", dash=(4, 4))
+            self.calib_canvas.create_oval(transformed_cx-5, transformed_cy-5, transformed_cx+5, transformed_cy+5, fill="#3388ff", outline="#0044cc")
+
+    def _get_node_canvas_pos(self, x, y):
         padding = self.canvas_size * 0.08
         active_area = self.canvas_size - (padding * 2)
+        canvas_x = int((x / 100.0) * active_area + padding)
+        canvas_y = int((y / 100.0) * active_area + padding)
+        return canvas_x, canvas_y
 
-        for idx, target in enumerate(provider.targets):
-            x, y = provider.get_target_coords(target)
-            
-            canvas_x = int((x / 100.0) * active_area + padding)
-            canvas_y = int((y / 100.0) * active_area + padding)
-
+    def _draw_task_layout(self, session, completed_count=0):
+        for idx, (target, coords) in enumerate(session.layout.items()):
+            canvas_x, canvas_y = self._get_node_canvas_pos(coords[0], coords[1])
             is_completed = idx < completed_count
-            if is_completed:
-                color = "#90ee90"
-                outline = "#2e8b57"
-                width = 2
-            else:
-                color = "#ffffff"
-                outline = "#333333"
-                width = 2
+
+            color = "#90ee90" if is_completed else "#ffffff"
+            outline = "#2e8b57" if is_completed else "#333333"
 
             self.canvas.create_oval(
-                canvas_x - self.node_radius,
-                canvas_y - self.node_radius,
-                canvas_x + self.node_radius,
-                canvas_y + self.node_radius,
-                fill=color,
-                outline=outline,
-                width=width,
+                canvas_x - self.node_radius, canvas_y - self.node_radius,
+                canvas_x + self.node_radius, canvas_y + self.node_radius,
+                fill=color, outline=outline, width=2
             )
-            self.canvas.create_text(canvas_x, canvas_y, text=target, fill="#111111", font=("Segoe UI", int(self.node_radius*0.7), "bold"))
+            self.canvas.create_text(
+                canvas_x, canvas_y, text=target, fill="#111111",
+                font=("Segoe UI", int(self.node_radius * 0.7), "bold")
+            )
 
+    def _start_playback(self, mode):
+        self.play_mode = mode
+        if mode == "Seq":
+            if self.sessions["A"].is_json_loaded:
+                self.active_task = "A"
+            elif self.sessions["B"].is_json_loaded:
+                self.active_task = "B"
+            else:
+                return 
+        else:
+            self.active_task = mode
+            if not self.sessions[mode].is_json_loaded:
+                return
+                
+        # Hard start at t=0 instead of pulling the negative session.min_time_ms
+        self.current_time_ms = 0
+        self.is_playing = True
+        self._playback_loop()
+
+    def _reset_playback(self):
+        self.is_playing = False
+        self.canvas.delete("all")
+        self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
+        self.canvas.create_text(self.canvas_size/2, self.canvas_size/2, text="Playback Stopped", font=("Segoe UI", 16, "bold"), fill="#aaaaaa")
+
+    def _change_speed(self, event=None):
+        self.playback_speed = float(self.speed_var.get().replace("x", ""))
+
+    def _playback_loop(self):
+        if not self.is_playing:
+            return
+
+        session = self.sessions[self.active_task]
+
+        self.canvas.delete("all")
+        self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
+
+        latest_mouse = None
+        completed_count = 0
+        
+        # Scrape through events for task progress
+        for ev in session.events:
+            ev_t = ev.get("elapsed_since_start_ms")
+            if ev_t is not None and ev_t <= self.current_time_ms:
+                completed_count = ev.get("completed_count", completed_count)
+                if "x" in ev and "y" in ev:
+                    latest_mouse = (ev["x"], ev["y"], ev["event_type"])
+            elif ev_t is not None and ev_t > self.current_time_ms:
+                break
+
+        self._draw_task_layout(session, completed_count)
         self.canvas.create_text(
-            20,
-            20,
-            anchor="nw",
-            text=f"Score: {self.session.score}   Errors: {self.session.errors}   Next: {current_target or 'Complete'}",
-            font=("Segoe UI", 12, "bold"),
-            fill="#1b1b1b",
+            20, 20, anchor="nw", 
+            text=f"Phase: TMT-{self.active_task} Task | Time: {int(self.current_time_ms)}ms", 
+            font=("Segoe UI", 12, "bold"), fill="#1b1b1b"
         )
 
-    def _handle_mouse_move(self, event):
-        if self.session is None or self.is_calibrating:
+        # --- DRAW TRANSFORMED GAZE PATH ---
+        if session.gaze_samples:
+            # We still ensure the 300ms tail is rendered correctly right off the starting line
+            window_start = max(session.min_time_ms, self.current_time_ms - 300)
+            visible_gaze = [
+                (x, y) for (t, x, y) in session.gaze_samples
+                if window_start <= t <= self.current_time_ms
+            ]
+
+            screen_w = self.root.winfo_screenwidth()
+            screen_h = self.root.winfo_screenheight()
+            offset_x = (screen_w - self.canvas_size) / 2
+            offset_y = (screen_h - self.canvas_size) / 2
+            center_cx = self.canvas_size / 2
+            center_cy = self.canvas_size / 2
+
+            for gx, gy in visible_gaze:
+                raw_cx = gx - offset_x
+                raw_cy = gy - offset_y
+
+                transformed_cx, transformed_cy = session.apply_calibration(raw_cx, raw_cy, center_cx, center_cy)
+
+                self.canvas.create_oval(transformed_cx - 3, transformed_cy - 3, transformed_cx + 3, transformed_cy + 3, fill="#ff3366", outline="")
+
+        if latest_mouse and self.current_time_ms >= 0:
+            mx, my, ev_type = latest_mouse
+            color = "#00cc00" if ev_type == "correct_click" else "#3388ff"
+            r = 7 if "click" in ev_type else 4
+            self.canvas.create_oval(mx - r, my - r, mx + r, my + r, fill=color, outline="#000000")
+
+        step_interval = 25  
+        self.current_time_ms += step_interval * self.playback_speed
+
+        # --- TRANSITION LOGIC ---
+        if session.max_time_ms > 0 and self.current_time_ms > session.max_time_ms:
+            if self.play_mode == "Seq" and self.active_task == "A":
+                if self.sessions["B"].is_json_loaded:
+                    self.active_task = "B"
+                    # Sequence transitions directly to t=0 for Task B!
+                    self.current_time_ms = 0
+                    self.root.after(step_interval, self._playback_loop)
+                    return
+            
+            self.is_playing = False
+            self.canvas.create_text(self.canvas_size/2, 50, text="Playback Complete", font=("Segoe UI", 16, "bold"), fill="#2e8b57")
             return
-        self.session.log_mouse_move(event.x, event.y)
 
-    def _handle_mouse_click(self, event):
-        if self.is_calibrating:
-            if self.calibration_step == 0:
-                x_pct, y_pct = self.calibration_points[self.calibration_index]
-                padding = self.canvas_size * 0.08
-                active_area = self.canvas_size - (padding * 2)
-                canvas_x = int((x_pct / 100.0) * active_area + padding)
-                canvas_y = int((y_pct / 100.0) * active_area + padding)
-                
-                if self.eye_tracker.connected:
-                    self.eye_tracker.log_event(f"CALIBRATION_DOT_{self.calibration_index}_X:{canvas_x}_Y:{canvas_y}")
-                
-                self.calibration_step = 1
-                self._draw_current_calibration_dot() 
-                
-            elif self.calibration_step == 1:
-                self.calibration_index += 1
-                self.calibration_step = 0 
-                
-                if self.calibration_index >= len(self.calibration_points):
-                    self.is_calibrating = False
-                    self._start_task(self.current_calibration_task)
-                else:
-                    self._draw_current_calibration_dot()
-                    
-            return 
-
-        if self.session is None:
-            return
-
-        hit_target = self._target_at(event.x, event.y)
-        if hit_target is None:
-            self.session.log_miss_click(event.x, event.y)
-            self.status_text.set("Missed click. Try the next target node.")
-        else:
-            self.session.submit_click(hit_target, event.x, event.y)
-            self.status_text.set(f"Clicked {hit_target}")
-
-        self.current_target_text.set(f"Current target: {self.session.provider.get_current_target() or 'Complete'}")
-        self._redraw_canvas()
-
-        if self.session.provider.completed:
-            self.session.finalize()
-            if self.sequence_mode and self.session.task_type == "A":
-                self.status_text.set("TMT-A complete. Starting TMT-B calibration...")
-                self.root.after(500, lambda: self._start_calibration("B"))
-            elif self.sequence_mode and self.session.task_type == "B":
-                self.status_text.set("TMT-B complete. Sequence finished.")
-                self.sequence_mode = False
-            else:
-                self.status_text.set("Task complete. You can start another task.")
-
-    def _target_at(self, x, y):
-        if self.session is None:
-            return None
-        provider = self.session.provider
-        
-        padding = self.canvas_size * 0.08
-        active_area = self.canvas_size - (padding * 2)
-
-        for target in provider.targets:
-            node_x, node_y = provider.get_target_coords(target)
-            
-            canvas_x = int((node_x / 100.0) * active_area + padding)
-            canvas_y = int((node_y / 100.0) * active_area + padding)
-            
-            distance = ((x - canvas_x) ** 2 + (y - canvas_y) ** 2) ** 0.5
-            if distance <= self.node_radius + 4:
-                return target
-        return None
-        
-    def _safe_exit(self, event=None):
-        self.status_text.set("Saving data and disconnecting EyeLink...")
-        self.root.update() 
-        
-        if self.session is not None and not self.session.provider.completed:
-            self.session.finalize()
-            
-        # The shutdown sequence is now securely living ONLY right here
-        if self.eye_tracker and self.eye_tracker.connected:
-            self.eye_tracker.disconnect()
-            
-        self.root.destroy()
-
-    def run(self):
-        self.root.mainloop()
+        self.root.after(step_interval, self._playback_loop)
 
 def main():
     root = tk.Tk()
-    app = HumanTMTApp(root)
-    app.run()
+    app = TMTReplayApp(root)
+    root.mainloop()
 
 if __name__ == "__main__":
     main()
