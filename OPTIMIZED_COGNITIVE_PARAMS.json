@@ -1,0 +1,26 @@
+{
+    "parameters": {
+        "AOI": 1.5,
+        "FIX": 50,
+        "SAC": 0.7
+    },
+    "human_metrics": {
+        "Memory (ms)": 0.0,
+        "Search (ms)": 0.0,
+        "Motor (ms)": 0.0,
+        "Total Skips": 0,
+        "Saccades/Search": 0.0
+    },
+    "bot_metrics": {
+        "Memory (ms)": 0.0,
+        "Search (ms)": 237.91666666666666,
+        "Motor (ms)": 0.0,
+        "Total Skips": 0,
+        "Saccades/Search": 89.79166666666667
+    },
+    "loss": 64666.883680555555,
+    "files": {
+        "json": "sim_logs\\OptiBot_A_20260904_143947_482980.jsonl",
+        "asc": "sim_logs\\OptiBot_A_20260904_143947_482980.asc"
+    }
+}

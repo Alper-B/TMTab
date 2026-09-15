@@ -11,29 +11,31 @@ except ImportError:
     exit(1)
 
 class CognitiveMetrics:
-    def __init__(self, task_type):
+    def __init__(self, task_type, dynamic_params=None):
         self.task_type = task_type
-        if task_type == "A":
-            self.memory_speed = 48
-            self.search_speed = 988
-            self.motor_speed = 417
-            self.total_skips = 19
-            self.total_saccades = 214.2
-        else:
-            self.search_speed = 1876
-            self.memory_speed = 78
-            self.motor_speed = 510
-            self.total_skips = 61
-            self.total_saccades = 438.5
+        
+        # Default fallback values if no dynamic params are provided
+        if dynamic_params is None:
+            if task_type == "A":
+                dynamic_params = {"Memory (ms)": 48, "Search (ms)": 988, "Motor (ms)": 417, "Total Skips": 19, "Saccades/Search": 8.9}
+            else:
+                dynamic_params = {"Memory (ms)": 78, "Search (ms)": 1876, "Motor (ms)": 510, "Total Skips": 61, "Saccades/Search": 18.2}
 
+        # Dynamically map the dictionary to the bot's variables
+        self.memory_speed = dynamic_params.get("Memory (ms)", 50)
+        self.search_speed = dynamic_params.get("Search (ms)", 1000)
+        self.motor_speed = dynamic_params.get("Motor (ms)", 400)
+        self.total_skips = dynamic_params.get("Total Skips", 20)
+        
+        # Calculate derived metrics based on total targets (24 transitions in TMT)
         self.skips_per_target = self.total_skips / 24.0
-        self.saccades_per_target = self.total_saccades / 24.0
+        self.saccades_per_target = dynamic_params.get("Saccades/Search", 5)
 
 class CognitiveTMTAgent:
-    def __init__(self, task_type="A", participant_id="Synthetic_Bot"):
+    def __init__(self, task_type="A", participant_id="Synthetic_Bot", custom_metrics=None):
         self.task_type = task_type
         self.participant_id = participant_id
-        self.metrics = CognitiveMetrics(task_type)
+        self.metrics = CognitiveMetrics(task_type, custom_metrics)
         
         self.current_time_ms = 0
         self.asc_lines = []
@@ -142,7 +144,7 @@ class CognitiveTMTAgent:
             if self.current_time_ms % 10 == 0:
                 self._write_json_event("mouse_move", {"x": self.mouse_x, "y": self.mouse_y})
 
-        # CALIBRATION ENFORCEMENT: Eliminate floating-point drift at the end of the move
+        # CALIBRATION ENFORCEMENT: Eliminate floating-point drift
         self.mouse_x = float(target_x)
         self.mouse_y = float(target_y)
         self._write_json_event("mouse_move", {"x": self.mouse_x, "y": self.mouse_y})
@@ -209,12 +211,13 @@ class CognitiveTMTAgent:
             print(f"[{self.current_time_ms}ms] Agent clicked {current_target}")
             
         self._write_json_event("task_completed", {"final_score": 25})
-        self._save_files()
+        return self._save_files()
 
     def _save_files(self):
         base_dir = Path("sim_logs")
         base_dir.mkdir(exist_ok=True)
-        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Added microsecond to prevent file overwrites during fast optimization loops
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         
         asc_path = base_dir / f"{self.participant_id}_{self.task_type}_{stamp}.asc"
         with open(asc_path, "w", encoding="utf-8") as f:
@@ -225,7 +228,8 @@ class CognitiveTMTAgent:
             for ev in self.json_events:
                 f.write(json.dumps(ev) + "\n")
                 
-        print(f"Simulation Complete. Logs saved to: {base_dir.resolve()}")
+        print(f"Simulation Logs saved to: {base_dir.resolve()}")
+        return str(json_path), str(asc_path)
 
 if __name__ == "__main__":
     agent_a = CognitiveTMTAgent(task_type="A", participant_id="Bot_Refactored")

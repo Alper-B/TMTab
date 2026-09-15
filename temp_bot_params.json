@@ -1,0 +1,14 @@
+{
+    "analysis_params": {
+        "AOI": 3.5,
+        "FIX": 150,
+        "SAC": 0.7
+    },
+    "extracted_metrics": {
+        "Memory (ms)": 0.0,
+        "Search (ms)": 0.0,
+        "Motor (ms)": 0.0,
+        "Total Skips": 0,
+        "Saccades/Search": 0.0
+    }
+}

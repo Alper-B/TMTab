@@ -1,252 +1,170 @@
 import json
-import re
-import math
-import numpy as np
-from pathlib import Path
 import itertools
+import math
+import re
+from pathlib import Path
+import numpy as np
 
-# We import your agent file directly! Make sure your file is named agent.py
-# If it's named something else (like TMTagent.py), change this import.
-try:
-    import agent
-except ImportError:
-    print("Error: Could not import agent.py. Make sure the file name matches!")
-    exit(1)
+# Import our newly refactored modular code
+from agent import CognitiveTMTAgent
+from visualizer import TMTSession, HeadlessCognitiveAnalyzer
 
-# --- THE GRID SEARCH SPACE ---
-# The script will test every combination of these parameters!
-PARAM_GRID = {
-    "AOI_RADIUS_MULTIPLIER": [1.5, 2.0, 2.5, 3.0],
-    "MIN_FIXATION_MS": [50, 100, 150],
-    "SACCADE_VELOCITY_THRESHOLD": [0.3, 0.5, 0.8]
-}
-
-# Headless Canvas Configuration (Matches 1080p at 0.85 scaling)
-SCREEN_W, SCREEN_H = 1920, 1080
-CANVAS_SIZE = int(SCREEN_H * 0.85)
-NODE_RADIUS = int(CANVAS_SIZE * 0.025)
-
-def parse_files(json_path, asc_path):
-    """Headless parser for JSONL and ASC files."""
-    events, gaze_samples = [], []
-    layout = {}
+def load_headless_session(json_path, asc_path, task_type="A"):
+    """Fully functional headless loader that actually reads the files."""
+    session = TMTSession(task_type)
     
     # 1. Parse JSON
-    with open(json_path, "r", encoding="utf-8") as f:
-        for line in f:
-            if line.strip(): events.append(json.loads(line))
-            
-    if events:
-        first = events[0]
-        targets = first.get("targets", [])
-        raw_layout = first.get("layout", [])
-        layout = {targets[i]: raw_layout[i] for i in range(min(len(targets), len(raw_layout)))}
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip(): 
+                    session.events.append(json.loads(line))
+                    
+        if session.events:
+            first_event = session.events[0]
+            targets = first_event.get("targets", [])
+            raw_layout = first_event.get("layout", [])
+            session.layout = {targets[i]: raw_layout[i] for i in range(min(len(targets), len(raw_layout)))}
+            for ev in reversed(session.events):
+                if ev.get("elapsed_since_start_ms") is not None:
+                    session.max_time_ms = ev["elapsed_since_start_ms"]
+                    break
+            session.is_json_loaded = True
+    except FileNotFoundError:
+        print(f"Warning: JSON not found at {json_path}")
 
     # 2. Parse ASC
     sample_pattern = re.compile(r"^\s*(\d+)\s+([^\s]+)\s+([^\s]+)")
-    sync_time = 0
-    with open(asc_path, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            s = line.strip()
-            if match := re.match(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+timer_started", s):
-                sync_time = int(match.group(1))
-                break
+    msg_timer_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+timer_started")
+    msg_calib_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+CALIBRATION_DOT_(\d+)_X:(\d+)_Y:(\d+)")
 
-    with open(asc_path, "r", encoding="utf-8", errors="ignore") as f:
-        for line in f:
-            if match := sample_pattern.match(line.strip()):
-                ts, x, y = match.groups()
-                if x != "." and y != ".":
-                    gaze_samples.append((int(ts) - sync_time, float(x), float(y)))
+    sync_time, first_ts = None, None
+    try:
+        with open(asc_path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                s = line.strip()
+                if timer_match := msg_timer_pattern.match(s):
+                    sync_time = int(timer_match.group(1))
+                    break
+                if not first_ts and (match := sample_pattern.match(s)):
+                    first_ts = int(match.group(1))
 
-    return events, gaze_samples, layout
+        if sync_time is None: sync_time = first_ts if first_ts else 0
 
-def get_node_canvas_pos(pct_x, pct_y):
-    padding = CANVAS_SIZE * 0.08
-    active_area = CANVAS_SIZE - (padding * 2)
-    return int((pct_x / 100.0) * active_area + padding), int((pct_y / 100.0) * active_area + padding)
-
-def extract_metrics(events, gaze_samples, layout, aoi_mult, min_fix, sacc_vel):
-    """The core cognitive analysis engine, running headlessly."""
-    aoi_radius = NODE_RADIUS * aoi_mult
-    
-    # Map clicks
-    clicks = []
-    for ev in events:
-        if ev.get("event_type") == "correct_click" and "target" in ev:
-            t_id = str(ev["target"])
-            if t_id in layout:
-                cx, cy = get_node_canvas_pos(*layout[t_id])
-                clicks.append({"id": t_id, "time": ev["elapsed_since_start_ms"], "cx": cx, "cy": cy})
-
-    # For headless bot analysis, we assume perfect calibration (1:1 with screen space)
-    # The real data should ideally be pre-calibrated or we offset it.
-    offset_x = (SCREEN_W - CANVAS_SIZE) / 2
-    offset_y = (SCREEN_H - CANVAS_SIZE) / 2
-    calibrated_gaze = [(t, x - offset_x, y - offset_y) for t, x, y in gaze_samples]
-
-    mem_times, search_times, motor_times, search_saccades = [], [], [], []
-    skips = 0
-
-    for i in range(1, len(clicks)):
-        prev, curr = clicks[i-1], clicks[i]
-        segment = [g for g in calibrated_gaze if prev["time"] <= g[0] <= curr["time"]]
-        if not segment: continue
-
-        t_leave = prev["time"]
-        for g in segment:
-            if math.hypot(g[1] - prev["cx"], g[2] - prev["cy"]) > aoi_radius:
-                t_leave = g[0]
-                break
-        mem_times.append(t_leave - prev["time"])
-
-        t_fix_start = None
-        fix_timer, sacc_count = 0, 0
-        last_g_time = t_leave
+        with open(asc_path, "r", encoding="utf-8", errors="ignore") as f:
+            for line in f:
+                s = line.strip()
+                if calib_match := msg_calib_pattern.match(s):
+                    ts, idx, cx, cy = int(calib_match.group(1)) - sync_time, int(calib_match.group(2)), int(calib_match.group(3)), int(calib_match.group(4))
+                    session.calib_events.append((ts, idx, cx, cy))
+                    continue
+                if match := sample_pattern.match(s):
+                    ts, x_str, y_str = match.groups()
+                    if x_str == "." or y_str == ".": continue
+                    try: session.gaze_samples.append((int(ts) - sync_time, float(x_str), float(y_str)))
+                    except ValueError: pass
         
-        for g in segment:
-            if g[0] < t_leave: continue
-            
-            td = g[0] - last_g_time
-            if td > 0:
-                vel = math.hypot(g[1] - segment[segment.index(g)-1][1], g[2] - segment[segment.index(g)-1][2]) / td
-                if vel > sacc_vel: sacc_count += 1
-            last_g_time = g[0]
+        if session.gaze_samples:
+            session.min_time_ms = session.gaze_samples[0][0]
+        session.is_asc_loaded = True
+    except FileNotFoundError:
+        print(f"Warning: ASC not found at {asc_path}")
+        
+    return session
 
-            if math.hypot(g[1] - curr["cx"], g[2] - curr["cy"]) <= aoi_radius:
-                if fix_timer == 0: fix_start_t = g[0]
-                fix_timer += td
-                if fix_timer >= min_fix and t_fix_start is None: t_fix_start = fix_start_t
-            else:
-                if 0 < fix_timer < min_fix: skips += 1
-                fix_timer = 0
-
-        if t_fix_start is None: t_fix_start = curr["time"]
-
-        search_times.append(t_fix_start - t_leave)
-        motor_times.append(curr["time"] - t_fix_start)
-        search_saccades.append(sacc_count)
-
-    return {
-        "memory_speed": float(np.mean(mem_times)) if mem_times else 0.0,
-        "search_speed": float(np.mean(search_times)) if search_times else 0.0,
-        "motor_speed": float(np.mean(motor_times)) if motor_times else 0.0,
-        "total_skips": skips,
-        "total_saccades": float(np.sum(search_saccades)) if search_saccades else 0.0
-    }
-
-def calculate_mape(real_metrics, bot_metrics):
-    """Calculates the Mean Absolute Percentage Error between real and bot metrics."""
-    error = 0.0
-    keys = ["memory_speed", "search_speed", "motor_speed", "total_skips", "total_saccades"]
+def calculate_loss(real_metrics, sim_metrics):
+    """Calculates Mean Squared Error between the human and the bot."""
+    loss = 0
+    keys = ["Memory (ms)", "Search (ms)", "Motor (ms)", "Total Skips", "Saccades/Search"]
     for k in keys:
-        if real_metrics[k] == 0: continue
-        # How far off is the bot from the real human as a percentage?
-        pct_diff = abs(real_metrics[k] - bot_metrics[k]) / real_metrics[k]
-        error += pct_diff
-    return error / len(keys)
+        # Normalize the scale so large ms values don't overpower small skip counts
+        norm_factor = max(real_metrics[k], 1.0)
+        diff = (real_metrics[k] - sim_metrics[k]) / norm_factor
+        loss += diff ** 2
+    return loss
 
-# --- MONKEY PATCHING THE AGENT ---
-def override_agent_metrics(self, task_type):
-    """This function dynamically replaces your agent's hardcoded init."""
-    with open('temp_bot_config.json', 'r') as f:
-        config = json.load(f)
+def run_hyperparameter_optimization():
+    print("--- Starting Cognitive Parameter Optimizer ---")
     
-    data = config.get(task_type, config.get("A")) # Fallback to A if missing
-    self.task_type = task_type
-    self.memory_speed = data['memory_speed']
-    self.search_speed = data['search_speed']
-    self.motor_speed = data['motor_speed']
-    self.total_skips = data['total_skips']
-    self.total_saccades = data['total_saccades']
-    self.skips_per_target = self.total_skips / 24.0
-    self.saccades_per_target = self.total_saccades / 24.0
+    # 1. Define the Grid Search Space
+    aoi_mults = [1.5, 2.5, 3.5]
+    min_fix_times = [50, 100, 150]
+    saccade_threshs = [0.3, 0.5, 0.7]
+    
+    # Put your real human baseline files here!
+    REAL_JSON = "participant_A_20260831_140357_2.jsonl"
+    REAL_ASC = "participant_A_20260831_140357_2.asc" 
+    
+    best_loss = float('inf')
+    best_config = {}
+    optimization_ledger = []
 
-# Apply the hijack!
-agent.CognitiveMetrics.__init__ = override_agent_metrics
+    combinations = list(itertools.product(aoi_mults, min_fix_times, saccade_threshs))
+    print(f"Total configurations to test: {len(combinations)}\n")
 
-
-def run_optimization(real_json_a, real_asc_a):
-    print("🚀 Booting Hyperparameter Optimization Pipeline...")
-    
-    # Generate all combinations of parameters
-    keys, values = zip(*PARAM_GRID.items())
-    experiments = [dict(zip(keys, v)) for v in itertools.product(*values)]
-    
-    print(f"Loaded {len(experiments)} experimental configurations to test.")
-    
-    # Load real data ONCE to save massive amounts of time
-    real_ev_a, real_gaze_a, real_lay_a = parse_files(real_json_a, real_asc_a)
-    
-    results_ledger = []
-    best_error = float('inf')
-    best_params = None
-
-    for idx, params in enumerate(experiments):
-        aoi = params["AOI_RADIUS_MULTIPLIER"]
-        m_fix = params["MIN_FIXATION_MS"]
-        s_vel = params["SACCADE_VELOCITY_THRESHOLD"]
+    for aoi, fix, sac in combinations:
+        print(f"Testing Config -> AOI: {aoi}, Min Fix: {fix}ms, Saccade Vel: {sac}")
         
-        print(f"\n--- Running Experiment {idx+1}/{len(experiments)} ---")
-        print(f"Params: AOI: {aoi}x | Fixation: {m_fix}ms | Saccade Threshold: {s_vel}")
+        # Step A: Analyze REAL data with current parameters
+        analyzer = HeadlessCognitiveAnalyzer(aoi, fix, sac, 918)
+        real_session = load_headless_session(REAL_JSON, REAL_ASC, "A")
+        real_metrics = analyzer.analyze_session(real_session)
         
-        # 1. Analyze Real Data with current parameters
-        real_metrics_a = extract_metrics(real_ev_a, real_gaze_a, real_lay_a, aoi, m_fix, s_vel)
+        # Step B: Spin up the Bot using the real metrics
+        agent = CognitiveTMTAgent(task_type="A", participant_id="OptiBot", custom_metrics=real_metrics)
+        sim_json, sim_asc = agent.run_simulation()
         
-        # 2. Save Real Metrics for the Bot to read
-        with open('temp_bot_config.json', 'w') as f:
-            json.dump({"A": real_metrics_a}, f)
+        # Step C: Analyze the BOT data with the SAME parameters
+        sim_session = load_headless_session(sim_json, sim_asc, "A")
+        sim_metrics = analyzer.analyze_session(sim_session)
+        
+        # Step D: Compare them
+        current_loss = calculate_loss(real_metrics, sim_metrics)
+        
+        result_log = {
+            "parameters": {"AOI": aoi, "FIX": fix, "SAC": sac},
+            "human_metrics": real_metrics,
+            "bot_metrics": sim_metrics,
+            "loss": current_loss,
+            "files": {"json": sim_json, "asc": sim_asc}
+        }
+        optimization_ledger.append(result_log)
+        
+        if current_loss < best_loss:
+            best_loss = current_loss
+            best_config = result_log
+            print(f"  >>> NEW BEST! Loss: {current_loss:.4f}")
+
+    # Step E: File Cleanup (The Janitor Routine)
+    print("\n--- Cleaning up suboptimal simulation files ---")
+    best_json = best_config["files"]["json"]
+    best_asc = best_config["files"]["asc"]
+    
+    files_deleted = 0
+    for log in optimization_ledger:
+        j_path = Path(log["files"]["json"])
+        a_path = Path(log["files"]["asc"])
+        
+        if j_path != Path(best_json) and j_path.exists():
+            j_path.unlink()
+            files_deleted += 1
+        if a_path != Path(best_asc) and a_path.exists():
+            a_path.unlink()
+            files_deleted += 1
             
-        # 3. Trigger the Bot Simulation
-        # The bot will automatically read temp_bot_config.json due to our monkey patch
-        bot = agent.CognitiveTMTAgent(task_type="A", participant_id=f"Bot_Opt_{idx}")
-        bot.run_simulation()
-        
-        # 4. Find the newest files the bot just spit out in sim_logs
-        log_dir = Path("sim_logs")
-        bot_asc_files = sorted(log_dir.glob(f"Bot_Opt_{idx}_A_*.asc"), key=lambda p: p.stat().st_mtime, reverse=True)
-        bot_json_files = sorted(log_dir.glob(f"Bot_Opt_{idx}_A_*.jsonl"), key=lambda p: p.stat().st_mtime, reverse=True)
-        
-        if not bot_asc_files or not bot_json_files:
-            print("Error: Bot didn't output files correctly. Skipping.")
-            continue
-            
-        # 5. Analyze the Bot's simulated data with the SAME parameters
-        bot_ev_a, bot_gaze_a, bot_lay_a = parse_files(bot_json_files[0], bot_asc_files[0])
-        bot_metrics_a = extract_metrics(bot_ev_a, bot_gaze_a, bot_lay_a, aoi, m_fix, s_vel)
-        
-        # 6. Calculate the Error (MAPE)
-        error = calculate_mape(real_metrics_a, bot_metrics_a)
-        print(f"Result Error Score: {error:.4f} (Lower is better)")
-        
-        results_ledger.append({
-            "experiment_id": idx,
-            "parameters": params,
-            "real_human_metrics": real_metrics_a,
-            "bot_simulated_metrics": bot_metrics_a,
-            "mape_error_score": error
-        })
-        
-        if error < best_error:
-            best_error = error
-            best_params = params
+    print(f"Deleted {files_deleted} discarded simulation files.")
 
-    # Save the final results dictionary
-    with open("optimization_results.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "best_parameters": best_params,
-            "lowest_error": best_error,
-            "all_experiments": results_ledger
-        }, f, indent=4)
+    # Save the absolute best parameters
+    with open("OPTIMIZED_COGNITIVE_PARAMS.json", "w") as f:
+        json.dump(best_config, f, indent=4)
         
-    print("\n🎉 OPTIMIZATION COMPLETE!")
-    print(f"The closest match between Human and Bot behavior happened with:")
-    print(json.dumps(best_params, indent=4))
-    print("Full ledger saved to 'optimization_results.json'")
+    print(f"\n--- Optimization Complete ---")
+    print(f"Lowest Loss Achieved: {best_loss:.4f}")
+    print("\n🏆 THE WINNING HYPERPARAMETERS 🏆")
+    print(f"  Area of Interest Multiplier: {best_config['parameters']['AOI']}")
+    print(f"  Minimum Fixation Dwell:      {best_config['parameters']['FIX']} ms")
+    print(f"  Saccade Velocity Threshold:  {best_config['parameters']['SAC']} px/ms")
+    print(f"\nThe champion files have been saved as:\n -> {best_json}\n -> {best_asc}")
 
 if __name__ == "__main__":
-    # --- PLUG IN YOUR REAL HUMAN DATA FILES HERE ---
-    REAL_JSON_A = "participant_A_20260831_140357_2.jsonl"
-    REAL_ASC_A = "participant_A_20260831_140357_2.asc" # Provide the corresponding ASC file path here!
-    
-    run_optimization(REAL_JSON_A, REAL_ASC_A)
+    run_hyperparameter_optimization()
