@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 
 try:
-    from enviromentTMT import TMTTaskProvider
+    from Outdated.enviromentTMTleg import TMTTaskProvider
 except ImportError:
     print("Error: Could not import TMTTaskProvider. Ensure TMTagent package is in your path.")
     exit(1)
@@ -17,9 +17,17 @@ class CognitiveMetrics:
         # Default fallback values if no dynamic params are provided
         if dynamic_params is None:
             if task_type == "A":
-                dynamic_params = {"Memory (ms)": 48, "Search (ms)": 988, "Motor (ms)": 417, "Total Skips": 19, "Saccades/Search": 8.9}
+                dynamic_params = {
+                    "Memory (ms)": 48, "Search (ms)": 988, "Motor (ms)": 417, 
+                    "Total Skips": 19, "Saccades/Search": 8.9,
+                    "Memory Capacity": 20, "Memory Noise (px)": 3.0
+                }
             else:
-                dynamic_params = {"Memory (ms)": 78, "Search (ms)": 1876, "Motor (ms)": 510, "Total Skips": 61, "Saccades/Search": 18.2}
+                dynamic_params = {
+                    "Memory (ms)": 78, "Search (ms)": 1876, "Motor (ms)": 510, 
+                    "Total Skips": 61, "Saccades/Search": 18.2,
+                    "Memory Capacity": 1, "Memory Noise (px)": 3.0
+                }
 
         # Dynamically map the dictionary to the bot's variables
         self.memory_speed = dynamic_params.get("Memory (ms)", 50)
@@ -31,6 +39,10 @@ class CognitiveMetrics:
         self.skips_per_target = self.total_skips / 24.0
         self.saccades_per_target = dynamic_params.get("Saccades/Search", 5)
 
+        # Spatial Memory Metrics
+        self.memory_capacity = int(dynamic_params.get("Memory Capacity", 2))
+        self.memory_precision = float(dynamic_params.get("Memory Noise (px)", 40.0))
+
 class CognitiveTMTAgent:
     def __init__(self, task_type="A", participant_id="Synthetic_Bot", custom_metrics=None):
         self.task_type = task_type
@@ -40,6 +52,10 @@ class CognitiveTMTAgent:
         self.current_time_ms = 0
         self.asc_lines = []
         self.json_events = []
+        
+        # The working memory buffer (FIFO queue based on dictionary insertion order)
+        self.memory_bank = {}
+        self.peripheral_radius = 250  # Pixels. Defines how wide the peripheral vision catches future targets.
         
         self.screen_w = 1920
         self.screen_h = 1080
@@ -152,12 +168,34 @@ class CognitiveTMTAgent:
         end_time = self.current_time_ms - 1
         self.asc_lines.append(f"EFIX R   {start_time}\t{end_time}\t{int(duration_ms)}\t{self.gaze_x:6.1f}\t{self.gaze_y:6.1f}\t    300")
 
+    def _check_peripheral_memory(self, gaze_x, gaze_y, uncompleted_targets, current_target):
+        """Scans peripheral vision to encode future targets into working memory."""
+        if self.metrics.memory_capacity <= 0: return
+
+        for tgt in uncompleted_targets:
+            if tgt == current_target: continue # Actively searching for this, don't store as background memory
+            if tgt in self.memory_bank: continue # Already buffered
+            
+            tx, ty = self._get_screen_coords(tgt)
+            if math.hypot(tx - gaze_x, ty - gaze_y) < self.peripheral_radius:
+                # Add Gaussian noise based on precision metric
+                noise_x = random.gauss(0, self.metrics.memory_precision)
+                noise_y = random.gauss(0, self.metrics.memory_precision)
+                
+                self.memory_bank[tgt] = (tx + noise_x, ty + noise_y)
+                
+                # FIFO Cache Eviction to simulate memory capacity limits
+                if len(self.memory_bank) > self.metrics.memory_capacity:
+                    oldest_key = next(iter(self.memory_bank))
+                    del self.memory_bank[oldest_key]
+
     def run_simulation(self):
         print(f"--- Booting Agent for TMT-{self.task_type} ---")
         
         self.asc_lines = []
         self.json_events = []
         self.current_time_ms = 0
+        self.memory_bank.clear()
         
         self._write_json_event("task_started", {
             "targets": self.targets,
@@ -176,32 +214,52 @@ class CognitiveTMTAgent:
         for i in range(1, len(self.targets)):
             current_target = self.targets[i]
             t_x, t_y = self._get_screen_coords(current_target)
+            uncompleted = self.provider.get_uncompleted_targets()
             
+            # 1. WORKING MEMORY PHASE 
             mem_time = self.metrics.memory_speed * random.uniform(0.85, 1.15) 
             self._execute_fixation(mem_time)
             
-            actual_saccades = max(1, int(random.gauss(self.metrics.saccades_per_target, 2)))
-            time_per_saccade_cycle = self.metrics.search_speed / max(1, actual_saccades)
-            
-            remaining_nodes = self.provider.get_uncompleted_targets()
-            sorted_nodes = sorted(remaining_nodes, key=lambda n: math.hypot(self._get_screen_coords(n)[0] - self.gaze_x, self._get_screen_coords(n)[1] - self.gaze_y))
-            search_pool = sorted_nodes[:max(3, len(sorted_nodes)//3)] 
-            
-            for s in range(actual_saccades):
-                if s == actual_saccades - 1:
-                    self._execute_saccade(t_x, t_y, duration_ms=random.randint(25, 45))
-                    registration_time = random.uniform(150, 250)
-                    self._execute_fixation(registration_time)
-                else:
-                    dist_coords = self._get_screen_coords(random.choice(search_pool))
-                    dx = dist_coords[0] + random.uniform(-50, 50)
-                    dy = dist_coords[1] + random.uniform(-50, 50)
-                    
-                    self._execute_saccade(dx, dy, duration_ms=random.randint(20, 40))
-                    self._execute_fixation(duration_ms=time_per_saccade_cycle * random.uniform(0.7, 1.1), drift_mouse=True)
+            # 2. SPATIAL MEMORY RETRIEVAL OR SEARCH PHASE
+            if current_target in self.memory_bank:
+                # The agent remembers seeing this!
+                rem_x, rem_y = self.memory_bank.pop(current_target)
+                
+                # Saccade immediately to the fuzzy remembered location
+                self._execute_saccade(rem_x, rem_y, duration_ms=random.randint(25, 45))
+                self._execute_fixation(random.uniform(100, 150)) # Cognitive realization it's slightly off
+                
+                # Micro-saccade correction to the actual true target
+                self._execute_saccade(t_x, t_y, duration_ms=random.randint(15, 25))
+                self._execute_fixation(random.uniform(150, 250)) # Final registration
+            else:
+                # Normal Search Phase (It doesn't remember)
+                actual_saccades = max(1, int(random.gauss(self.metrics.saccades_per_target, 2)))
+                time_per_saccade_cycle = self.metrics.search_speed / max(1, actual_saccades)
+                
+                sorted_nodes = sorted(uncompleted, key=lambda n: math.hypot(self._get_screen_coords(n)[0] - self.gaze_x, self._get_screen_coords(n)[1] - self.gaze_y))
+                search_pool = sorted_nodes[:max(3, len(sorted_nodes)//3)] 
+                
+                for s in range(actual_saccades):
+                    if s == actual_saccades - 1:
+                        self._execute_saccade(t_x, t_y, duration_ms=random.randint(25, 45))
+                        registration_time = random.uniform(150, 250)
+                        self._execute_fixation(registration_time)
+                    else:
+                        dist_coords = self._get_screen_coords(random.choice(search_pool))
+                        dx = dist_coords[0] + random.uniform(-50, 50)
+                        dy = dist_coords[1] + random.uniform(-50, 50)
+                        
+                        self._execute_saccade(dx, dy, duration_ms=random.randint(20, 40))
+                        
+                        # Populate spatial memory using peripheral vision!
+                        self._check_peripheral_memory(self.gaze_x, self.gaze_y, uncompleted, current_target)
+                        
+                        self._execute_fixation(duration_ms=time_per_saccade_cycle * random.uniform(0.7, 1.1), drift_mouse=True)
 
             self.gaze_x, self.gaze_y = t_x, t_y
             
+            # 3. MOTOR EXECUTION PHASE
             mot_time = self.metrics.motor_speed * random.uniform(0.8, 1.2)
             self._execute_mouse_move(t_x, t_y, mot_time)
             
@@ -216,7 +274,6 @@ class CognitiveTMTAgent:
     def _save_files(self):
         base_dir = Path("sim_logs")
         base_dir.mkdir(exist_ok=True)
-        # Added microsecond to prevent file overwrites during fast optimization loops
         stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         
         asc_path = base_dir / f"{self.participant_id}_{self.task_type}_{stamp}.asc"

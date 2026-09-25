@@ -8,8 +8,9 @@ import math
 
 # --- COGNITIVE ANALYSIS CONFIGURATION CONSTANTS ---
 AOI_RADIUS_MULTIPLIER = 2.5       # Multiplier for node radius to define the visual Area of Interest (AOI)
-MIN_FIXATION_MS = 100             # Minimum dwell time in milliseconds to count as a cognitive fixation
+MIN_FIXATION_MS = 100             # Minimum dwell time in ms to count as a cognitive fixation
 SACCADE_VELOCITY_THRESHOLD = 0.5  # Minimum velocity (pixels/ms) to be classified as a rapid saccadic eye movement
+PERIPHERAL_RADIUS = 250           # Radius in pixels to define peripheral vision for memory encoding
 
 class TMTSession:
     def __init__(self, task_type):
@@ -105,7 +106,6 @@ class TMTSession:
         return True
 
     def calibrate_mouse_coordinates(self):
-        # Auto-maps recorded mouse space to percentage space using correct clicks
         clicks = [ev for ev in self.events if ev.get("event_type") == "correct_click" and "target" in ev and "x" in ev and "y" in ev]
         if len(clicks) < 2: return
 
@@ -138,6 +138,7 @@ class TMTSession:
             cy = ((raw_cy - center_cy) * self.gaze_scale_y) + center_cy + self.gaze_offset_y
             return cx, cy
 
+
 # --- HEADLESS ENGINE FOR OPTIMIZER INTEGRATION ---
 class HeadlessCognitiveAnalyzer:
     def __init__(self, aoi_mult, min_fix_ms, saccade_thresh, canvas_size):
@@ -154,7 +155,6 @@ class HeadlessCognitiveAnalyzer:
         return int((x / 100.0) * active_area + padding), int((y / 100.0) * active_area + padding)
 
     def analyze_session(self, session, offset_x=0, offset_y=0):
-        """Pass a loaded TMTSession object here. Returns the metrics dictionary."""
         clicks = []
         for ev in session.events:
             if ev.get("event_type") == "correct_click":
@@ -170,6 +170,9 @@ class HeadlessCognitiveAnalyzer:
 
         task_memory_times, task_search_times, task_motor_times = [], [], []
         task_skips, task_search_saccades = 0, []
+        
+        # New Memory Metrics
+        task_memory_capacities, task_memory_noises = [], []
 
         for i in range(1, len(clicks)):
             prev_click = clicks[i-1]
@@ -179,6 +182,7 @@ class HeadlessCognitiveAnalyzer:
             segment = [g for g in calibrated_gaze if t_start <= g[0] <= t_end]
             if not segment: continue
 
+            # Working Memory Dwell Time
             t_leave = t_start
             for g in segment:
                 dist = math.hypot(g[1] - prev_click["cx"], g[2] - prev_click["cy"])
@@ -189,7 +193,9 @@ class HeadlessCognitiveAnalyzer:
 
             t_fix_start = None
             fixation_timer, last_g_time, saccade_count = 0, t_leave, 0
+            landing_gaze = None
             
+            # Search Analysis
             for g in segment:
                 if g[0] < t_leave: continue
                 time_delta = g[0] - last_g_time
@@ -200,13 +206,40 @@ class HeadlessCognitiveAnalyzer:
 
                 dist = math.hypot(g[1] - curr_click["cx"], g[2] - curr_click["cy"])
                 if dist <= self.aoi_radius:
-                    if fixation_timer == 0: fixation_start_t = g[0]
+                    if fixation_timer == 0: 
+                        fixation_start_t = g[0]
+                        landing_gaze = g # Capture the exact gaze point where they first entered the AOI
                     fixation_timer += time_delta
                     if fixation_timer >= self.min_fix_ms and t_fix_start is None:
                         t_fix_start = fixation_start_t
                 else:
                     if 0 < fixation_timer < self.min_fix_ms: task_skips += 1
                     fixation_timer = 0
+
+            # Spatial Memory Extraction Logic
+            if t_fix_start is not None and saccade_count <= 1 and landing_gaze is not None:
+                # 1. Memory Precision (Noise)
+                noise = math.hypot(landing_gaze[1] - curr_click["cx"], landing_gaze[2] - curr_click["cy"])
+                task_memory_noises.append(noise)
+                
+                # 2. Memory Capacity (Scrub backwards)
+                t_seen = None
+                for past_g in reversed([g for g in calibrated_gaze if g[0] < t_leave]):
+                    if math.hypot(past_g[1] - curr_click["cx"], past_g[2] - curr_click["cy"]) < PERIPHERAL_RADIUS:
+                        t_seen = past_g[0]
+                        break
+                
+                if t_seen is not None:
+                    seen_step = 0
+                    # Find which step they were working on when they saw it
+                    for k in range(0, i):
+                        start_bound = 0 if k == 0 else clicks[k-1]["time"]
+                        end_bound = clicks[k]["time"]
+                        if start_bound <= t_seen <= end_bound:
+                            seen_step = k
+                            break
+                    capacity = i - seen_step
+                    task_memory_capacities.append(capacity)
 
             if t_fix_start is None: t_fix_start = t_end
 
@@ -219,8 +252,12 @@ class HeadlessCognitiveAnalyzer:
             "Search (ms)": float(np.mean(task_search_times)) if task_search_times else 0.0,
             "Motor (ms)": float(np.mean(task_motor_times)) if task_motor_times else 0.0,
             "Total Skips": int(task_skips),
-            "Saccades/Search": float(np.mean(task_search_saccades)) if task_search_saccades else 0.0
+            "Saccades/Search": float(np.mean(task_search_saccades)) if task_search_saccades else 0.0,
+            # Fallbacks of 1 and 40.0 applied if no memory jumps occur, preventing broken bot behavior
+            "Memory Capacity": int(np.mean(task_memory_capacities)) if task_memory_capacities else 1,
+            "Memory Noise (px)": float(np.mean(task_memory_noises)) if task_memory_noises else 40.0
         }
+
 
 class TMTReplayApp:
     def __init__(self, root):
@@ -410,7 +447,6 @@ class TMTReplayApp:
         return int((x / 100.0) * active_area + padding), int((y / 100.0) * active_area + padding)
 
     def _run_analysis(self):
-        # Instantiate the newly decoupled headless analyzer
         analyzer = HeadlessCognitiveAnalyzer(AOI_RADIUS_MULTIPLIER, MIN_FIXATION_MS, SACCADE_VELOCITY_THRESHOLD, self.canvas_size)
         offset_x = (self.root.winfo_screenwidth() - self.canvas_size) / 2
         offset_y = (self.root.winfo_screenheight() - self.canvas_size) / 2
@@ -428,7 +464,7 @@ class TMTReplayApp:
         if not results: return
         win = tk.Toplevel(self.root)
         win.title("Cognitive Simulation Metrics Dashboard")
-        win.geometry("500x400")
+        win.geometry("500x550")
         win.configure(bg="#2b2b2b")
         
         ttk.Label(win, text="Data Extracted from Timeline Slicer", font=("Segoe UI", 14, "bold")).pack(pady=10)
@@ -443,6 +479,10 @@ class TMTReplayApp:
             ttk.Label(frame, text=f"Motor Execution (motor_speed): {int(metrics['Motor (ms)'])} ms").pack(anchor=tk.W)
             ttk.Label(frame, text=f"Visual Skip Probability: {metrics['Total Skips']} occurrences").pack(anchor=tk.W)
             ttk.Label(frame, text=f"Avg Saccades per Search: {metrics['Saccades/Search']:.1f}").pack(anchor=tk.W)
+            
+            # Show the new Spatial Memory metrics
+            ttk.Label(frame, text=f"Memory Capacity (nodes): {metrics['Memory Capacity']}").pack(anchor=tk.W, pady=(5,0))
+            ttk.Label(frame, text=f"Memory Noise / Precision: {metrics['Memory Noise (px)']:.1f} px").pack(anchor=tk.W)
 
         if "A" in results and "B" in results and results["A"] and results["B"]:
             shift_delta = (results["B"]["Search (ms)"] + results["B"]["Memory (ms)"]) - (results["A"]["Search (ms)"] + results["A"]["Memory (ms)"])

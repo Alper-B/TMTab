@@ -23,24 +23,17 @@ class EyeTrackerController:
     def connect(self):
         if PSYCHOPY_AVAILABLE:
             try:
-                # Eye tracker definition exactly as specified in the ABL lab manual
                 iohub_tracker_class_path = 'eyetracker.hw.sr_research.eyelink.EyeTracker'
                 eyetracker_config = dict()
                 eyetracker_config['name'] = 'tracker'
                 eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
                 eyetracker_config['simulation_mode'] = False
                 eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
-                
-                # NOTE: The EyeLink Host PC has a strict 8-character limit for filenames!
-                # Keep this short and alphanumeric. Your local JSONL file will still 
-                # safely log the full participant ID.
                 eyetracker_config['default_native_data_file_name'] = "fname" 
                 
-                # Starting IO hub
                 self.io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
                 self.tracker = self.io.devices.tracker
                 
-                # At the start of an experiment
                 self.tracker.setConnectionState(True)
                 self.tracker.setRecordingState(True)
                 
@@ -52,14 +45,10 @@ class EyeTrackerController:
             print("PsychoPy ioHub not installed. Running in dummy mode for testing.")
 
     def log_event(self, event_message):
-        """Sends a synchronized timestamp trigger to the eye-tracker's data file."""
         if self.connected and self.tracker:
             self.tracker.sendMessage(f"TMT_EVENT: {event_message}")
-        else:
-            pass 
 
     def disconnect(self):
-        """Safely shuts down tracking at the end of the experiment."""
         if self.connected and self.tracker:
             print("Disconnecting EyeLink...")
             self.tracker.setConnectionState(False)
@@ -73,6 +62,8 @@ class EyeTrackerController:
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# Import the environment and its configuration constants
+import enviromentTMT
 from enviromentTMT import TMTTaskProvider
 
 class SharedLayoutTMTTaskProvider:
@@ -104,11 +95,14 @@ class SharedLayoutTMTTaskProvider:
         return self.provider.completed
 
 class HumanTMTSession:
-    def __init__(self, task_type="A", participant_id="participant", log_path=None, shared_layout=None, eye_tracker=None):
+    def __init__(self, task_type="A", participant_id="participant", log_path=None, shared_layout=None, eye_tracker=None, screen_dist=600, pixel_pitch=0.27):
         self.task_type = task_type
         self.participant_id = participant_id
         self.provider = SharedLayoutTMTTaskProvider(task_type=task_type, layout=shared_layout)
-        self.eye_tracker = eye_tracker # Pass the tracker in
+        self.eye_tracker = eye_tracker
+        self.screen_dist = screen_dist
+        self.pixel_pitch = pixel_pitch
+        
         self.score = 0
         self.errors = 0
         self.started_at = datetime.now().isoformat(timespec="seconds")
@@ -127,10 +121,22 @@ class HumanTMTSession:
             self.log_path = Path(log_path)
             self.log_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Inject physical tracking and layout generation metadata into the JSON log
         self._write_event("task_started", {
             "task_type": task_type,
             "targets": self.provider.targets,
             "layout": [list(self.provider.get_target_coords(target)) for target in self.provider.targets],
+            "physical_setup": {
+                "distance_to_screen_mm": self.screen_dist,
+                "monitor_pixel_pitch_mm": self.pixel_pitch
+            },
+            "layout_metadata": {
+                "mode": enviromentTMT.LAYOUT_MODE,
+                "seed": enviromentTMT.LAYOUT_SEED,
+                "cluster_min_step": enviromentTMT.CLUSTER_MIN_STEP,
+                "cluster_max_step": enviromentTMT.CLUSTER_MAX_STEP,
+                "min_global_spacing": enviromentTMT.MIN_GLOBAL_SPACING
+            }
         })
 
     def _write_event(self, event_type, payload):
@@ -163,9 +169,6 @@ class HumanTMTSession:
         with open(self.log_path, "a", encoding="utf-8") as handle:
             handle.write(json.dumps(entry, default=str) + "\n")
             
-        # --- SEND TRIGGER TO EYELINK ---
-        # We don't send mouse moves to avoid flooding the tracker, 
-        # but clicks and task boundaries are crucial.
         if self.eye_tracker and event_type != "mouse_move":
             self.eye_tracker.log_event(f"{event_type}_{self.task_type}_Target:{self.provider.get_current_target()}")
 
@@ -228,7 +231,6 @@ class HumanTMTSession:
             "total_events": len(self.log_entries),
         })
         
-        # Stop the eye tracker recording safely when the task is done
         if self.eye_tracker:
             self.eye_tracker.disconnect()
 
@@ -237,19 +239,17 @@ class HumanTMTApp:
         self.root = root
         self.root.title("Human TMT Recorder - Lab Edition")
         
-        # --- FULLSCREEN LOGIC ---
         self.root.attributes("-fullscreen", True)
-        self.root.configure(bg="#2b2b2b") # Dark background for research focus
-        
-        # Bind ESC to exit fullscreen safely using the new shutdown method
+        self.root.configure(bg="#2b2b2b") 
         self.root.bind("<Escape>", self._safe_exit)
 
-        # Calculate a perfect square canvas based on 85% of screen height
         screen_height = self.root.winfo_screenheight()
         self.canvas_size = int(screen_height * 0.85)
-        self.node_radius = int(self.canvas_size * 0.025) # Scale nodes with canvas
+        self.node_radius = int(self.canvas_size * 0.025) 
 
         self.participant_name = tk.StringVar(value="participant")
+        self.dist_mm = tk.StringVar(value="600")
+        self.pitch_mm = tk.StringVar(value="0.27")
         self.task_label = tk.StringVar(value="TMT-A")
         self.status_text = tk.StringVar(value="Start a task to begin recording")
         self.current_target_text = tk.StringVar(value="Current target: --")
@@ -259,7 +259,6 @@ class HumanTMTApp:
         self.sequence_mode = False
         self.session = None
         
-        # Initialize Eye Tracker
         self.eye_tracker = EyeTrackerController()
         self.eye_tracker.connect()
 
@@ -276,15 +275,22 @@ class HumanTMTApp:
         top_frame.pack(fill=tk.X)
 
         ttk.Label(top_frame, text="Participant:").pack(side=tk.LEFT)
-        participant_entry = ttk.Entry(top_frame, textvariable=self.participant_name, width=15)
-        participant_entry.pack(side=tk.LEFT, padx=6)
+        participant_entry = ttk.Entry(top_frame, textvariable=self.participant_name, width=12)
+        participant_entry.pack(side=tk.LEFT, padx=(6, 15))
+
+        ttk.Label(top_frame, text="Dist (mm):").pack(side=tk.LEFT)
+        dist_entry = ttk.Entry(top_frame, textvariable=self.dist_mm, width=5)
+        dist_entry.pack(side=tk.LEFT, padx=4)
+
+        ttk.Label(top_frame, text="Pitch (mm):").pack(side=tk.LEFT)
+        pitch_entry = ttk.Entry(top_frame, textvariable=self.pitch_mm, width=5)
+        pitch_entry.pack(side=tk.LEFT, padx=(4, 15))
 
         ttk.Button(top_frame, text="Start TMT-A", command=lambda: self._start_task("A")).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Start TMT-B", command=lambda: self._start_task("B")).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Run Sequence", command=self._start_sequence).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Reset", command=self._reset_current_task).pack(side=tk.LEFT, padx=4)
         
-        # Safe exit button
         ttk.Button(top_frame, text="Exit (ESC)", command=self._safe_exit).pack(side=tk.RIGHT)
 
         info_frame = ttk.Frame(self.root, padding=(10, 0, 10, 10))
@@ -293,12 +299,10 @@ class HumanTMTApp:
         ttk.Label(info_frame, textvariable=self.current_target_text, font=("Segoe UI", 12)).pack(side=tk.LEFT, padx=16)
         ttk.Label(info_frame, textvariable=self.status_text, foreground="#4da6ff", font=("Segoe UI", 12)).pack(side=tk.LEFT, padx=16)
 
-        # Center the canvas using expand=True
         canvas_container = tk.Frame(self.root, bg="#2b2b2b")
         canvas_container.pack(fill=tk.BOTH, expand=True)
 
         self.canvas = tk.Canvas(canvas_container, width=self.canvas_size, height=self.canvas_size, bg="#f5f5f5", highlightthickness=0)
-        # Anchor canvas in the center
         self.canvas.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
         self.canvas.bind("<Motion>", self._handle_mouse_move)
@@ -326,11 +330,19 @@ class HumanTMTApp:
         if self.session is not None and not self.session.provider.completed:
             self.session.finalize()
 
+        try:
+            d_mm = float(self.dist_mm.get())
+            p_mm = float(self.pitch_mm.get())
+        except ValueError:
+            d_mm, p_mm = 600.0, 0.27
+
         self.session = HumanTMTSession(
             task_type=task_type,
             participant_id=self.participant_name.get().strip() or "participant",
             shared_layout=self.shared_layout[task_type],
-            eye_tracker=self.eye_tracker 
+            eye_tracker=self.eye_tracker,
+            screen_dist=d_mm,
+            pixel_pitch=p_mm
         )
         self.task_label.set(f"TMT-{task_type}")
         self.current_target_text.set(f"Current target: {self.session.provider.get_current_target()}")
@@ -351,54 +363,40 @@ class HumanTMTApp:
         completed_count = provider.current_index
         current_target = provider.get_current_target()
 
-        padding = self.canvas_size * 0.08 # Keep nodes away from edges
+        padding = self.canvas_size * 0.08 
         active_area = self.canvas_size - (padding * 2)
 
         for idx, target in enumerate(provider.targets):
             x, y = provider.get_target_coords(target)
             
-            # Map the 0-100 coordinates to the new active area
             canvas_x = int((x / 100.0) * active_area + padding)
             canvas_y = int((y / 100.0) * active_area + padding)
 
             is_completed = idx < completed_count
             if is_completed:
-                color = "#90ee90"
-                outline = "#2e8b57"
-                width = 2
+                color, outline, width = "#90ee90", "#2e8b57", 2
             else:
-                color = "#ffffff"
-                outline = "#333333"
-                width = 2
+                color, outline, width = "#ffffff", "#333333", 2
 
             self.canvas.create_oval(
-                canvas_x - self.node_radius,
-                canvas_y - self.node_radius,
-                canvas_x + self.node_radius,
-                canvas_y + self.node_radius,
-                fill=color,
-                outline=outline,
-                width=width,
+                canvas_x - self.node_radius, canvas_y - self.node_radius,
+                canvas_x + self.node_radius, canvas_y + self.node_radius,
+                fill=color, outline=outline, width=width,
             )
             self.canvas.create_text(canvas_x, canvas_y, text=target, fill="#111111", font=("Segoe UI", int(self.node_radius*0.7), "bold"))
 
         self.canvas.create_text(
-            20,
-            20,
-            anchor="nw",
+            20, 20, anchor="nw",
             text=f"Score: {self.session.score}   Errors: {self.session.errors}   Next: {current_target or 'Complete'}",
-            font=("Segoe UI", 12, "bold"),
-            fill="#1b1b1b",
+            font=("Segoe UI", 12, "bold"), fill="#1b1b1b",
         )
 
     def _handle_mouse_move(self, event):
-        if self.session is None:
-            return
+        if self.session is None: return
         self.session.log_mouse_move(event.x, event.y)
 
     def _handle_mouse_click(self, event):
-        if self.session is None:
-            return
+        if self.session is None: return
 
         hit_target = self._target_at(event.x, event.y)
         if hit_target is None:
@@ -423,37 +421,27 @@ class HumanTMTApp:
                 self.status_text.set("Task complete. You can start another task.")
 
     def _target_at(self, x, y):
-        if self.session is None:
-            return None
+        if self.session is None: return None
         provider = self.session.provider
-        
-        padding = self.canvas_size * 0.08
-        active_area = self.canvas_size - (padding * 2)
+        padding, active_area = self.canvas_size * 0.08, self.canvas_size - (self.canvas_size * 0.16)
 
         for target in provider.targets:
             node_x, node_y = provider.get_target_coords(target)
-            
             canvas_x = int((node_x / 100.0) * active_area + padding)
             canvas_y = int((node_y / 100.0) * active_area + padding)
             
             distance = ((x - canvas_x) ** 2 + (y - canvas_y) ** 2) ** 0.5
-            if distance <= self.node_radius + 4: # Small generous hit-box
+            if distance <= self.node_radius + 4: 
                 return target
         return None
         
     def _safe_exit(self, event=None):
-        """Gracefully shut down the tracker and finalize logs before closing."""
         self.status_text.set("Saving data and disconnecting EyeLink...")
-        self.root.update() # Force UI to show the message so you know it's working
-        
-        # Finalize the session if you exit mid-task
+        self.root.update() 
         if self.session is not None and not self.session.provider.completed:
             self.session.finalize()
-        # If no session is active but the tracker is connected, disconnect it
         elif self.eye_tracker and self.eye_tracker.connected:
             self.eye_tracker.disconnect()
-            
-        # Now it is safe to close the window
         self.root.destroy()
 
     def run(self):
