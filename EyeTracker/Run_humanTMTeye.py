@@ -1,7 +1,6 @@
 import json
 import sys
 import time
-import math
 from datetime import datetime
 from pathlib import Path
 import tkinter as tk
@@ -30,7 +29,7 @@ class EyeTrackerController:
                 eyetracker_config['model_name'] = 'EYELINK 1000 DESKTOP'
                 eyetracker_config['simulation_mode'] = False
                 eyetracker_config['runtime_settings'] = dict(sampling_rate=1000, track_eyes='RIGHT')
-                eyetracker_config['default_native_data_file_name'] = "fname3" 
+                eyetracker_config['default_native_data_file_name'] = "fname1" 
                 
                 self.io = launchHubServer(**{iohub_tracker_class_path: eyetracker_config})
                 self.tracker = self.io.devices.tracker
@@ -46,10 +45,12 @@ class EyeTrackerController:
             print("PsychoPy ioHub not installed. Running in dummy mode for testing.")
 
     def log_event(self, event_message):
+        """Sends a synchronized timestamp trigger to the eye-tracker's data file."""
         if self.connected and self.tracker:
             self.tracker.sendMessage(f"TMT_EVENT: {event_message}")
 
     def disconnect(self):
+        """Safely shuts down tracking at the end of the experiment."""
         if self.connected and self.tracker:
             print("Disconnecting EyeLink...")
             self.tracker.setConnectionState(False)
@@ -122,6 +123,7 @@ class HumanTMTSession:
             self.log_path = Path(log_path)
             self.log_path.parent.mkdir(parents=True, exist_ok=True)
 
+        # Inject physical tracking and layout generation metadata into the JSON log
         self._write_event("task_started", {
             "task_type": task_type,
             "targets": self.provider.targets,
@@ -133,9 +135,9 @@ class HumanTMTSession:
             "layout_metadata": {
                 "mode": enviromentTMT.LAYOUT_MODE,
                 "seed": enviromentTMT.LAYOUT_SEED,
-                "cluster_min_step": enviromentTMT.CLUSTER_MIN_STEP,
-                "cluster_max_step": enviromentTMT.CLUSTER_MAX_STEP,
-                "min_global_spacing": enviromentTMT.MIN_GLOBAL_SPACING
+                "cluster_min_step": getattr(enviromentTMT, 'CLUSTER_MIN_STEP', 10.0),
+                "cluster_max_step": getattr(enviromentTMT, 'CLUSTER_MAX_STEP', 25.0),
+                "min_global_spacing": getattr(enviromentTMT, 'MIN_GLOBAL_SPACING', 8.0)
             }
         })
 
@@ -221,6 +223,7 @@ class HumanTMTSession:
         self._write_event("miss_click", {"x": x, "y": y})
 
     def finalize(self):
+        """Finalizes the logs for this specific task session."""
         duration_seconds = None
         if self.started_timestamp is not None:
             duration_seconds = round(time.time() - self.started_timestamp, 3)
@@ -230,9 +233,6 @@ class HumanTMTSession:
             "duration_seconds": duration_seconds,
             "total_events": len(self.log_entries),
         })
-        
-        if self.eye_tracker:
-            self.eye_tracker.disconnect()
 
 class HumanTMTApp:
     def __init__(self, root):
@@ -240,35 +240,44 @@ class HumanTMTApp:
         self.root.title("Human TMT Recorder - Lab Edition")
         
         self.root.attributes("-fullscreen", True)
-        self.root.configure(bg="#2b2b2b") 
+        self.root.configure(bg="#2b2b2b")
         self.root.bind("<Escape>", self._safe_exit)
 
         screen_height = self.root.winfo_screenheight()
         self.canvas_size = int(screen_height * 0.85)
-        self.node_radius = int(self.canvas_size * 0.025) 
+        self.node_radius = int(self.canvas_size * 0.025)
 
         self.participant_name = tk.StringVar(value="participant")
         self.dist_mm = tk.StringVar(value="600")
         self.pitch_mm = tk.StringVar(value="0.27")
-        self.task_label = tk.StringVar(value="Ready")
-        self.status_text = tk.StringVar(value="Run calibration, then start a task.")
-        self.current_target_text = tk.StringVar(value="--")
+        self.task_label = tk.StringVar(value="TMT-A")
+        self.status_text = tk.StringVar(value="Start a task to begin recording")
+        self.current_target_text = tk.StringVar(value="Current target: --")
 
         self.shared_layout = None
         self.task_layouts = {}
         self.sequence_mode = False
         self.session = None
         
-        # --- CALIBRATION STATE ---
-        self.is_calibrating = False
-        self.calib_points = []
-        self.current_calib_idx = 0
+        # --- CALIBRATION LOGIC VARIABLES ---
+        self.is_calibrating = False 
+        self.calibration_index = 0
+        self.calibration_step = 0 
+        self.current_calibration_task = None
+        self.calibration_points = [
+            (0, 0),    (50, 0),    (100, 0),
+            (0, 50),   (50, 50),   (100, 50),
+            (0, 100),  (50, 100),  (100, 100)
+        ]
         
         self.eye_tracker = EyeTrackerController()
         self.eye_tracker.connect()
 
         self._build_ui()
         self._initialize_layout()
+        
+        # Launch calibration immediately upon opening
+        self._start_calibration("A")
 
     def _build_ui(self):
         style = ttk.Style()
@@ -290,9 +299,8 @@ class HumanTMTApp:
         pitch_entry = ttk.Entry(top_frame, textvariable=self.pitch_mm, width=5)
         pitch_entry.pack(side=tk.LEFT, padx=(4, 15))
 
-        ttk.Button(top_frame, text="Run Calibration", command=self._start_calibration).pack(side=tk.LEFT, padx=4)
-        ttk.Button(top_frame, text="Start TMT-A", command=lambda: self._start_task("A")).pack(side=tk.LEFT, padx=4)
-        ttk.Button(top_frame, text="Start TMT-B", command=lambda: self._start_task("B")).pack(side=tk.LEFT, padx=4)
+        ttk.Button(top_frame, text="Start TMT-A", command=lambda: self._start_calibration("A")).pack(side=tk.LEFT, padx=4)
+        ttk.Button(top_frame, text="Start TMT-B", command=lambda: self._start_calibration("B")).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Run Sequence", command=self._start_sequence).pack(side=tk.LEFT, padx=4)
         ttk.Button(top_frame, text="Reset", command=self._reset_current_task).pack(side=tk.LEFT, padx=4)
         
@@ -326,61 +334,52 @@ class HumanTMTApp:
             "B": tmt_b_layout,
         }
 
-    # --- CALIBRATION LOGIC ---
-    def _start_calibration(self):
-        if self.session is not None and not self.session.provider.completed:
-            self.status_text.set("Please finish or reset the current task first.")
-            return
-
-        self.is_calibrating = True
-        self.current_calib_idx = 0
-        
-        # Define a 9-point grid for robust polynomial fitting
-        cs = self.canvas_size
-        p = cs * 0.1 # 10% padding from edges
-        c = cs / 2.0
-        
-        self.calib_points = [
-            (c, c),       # 0: Center
-            (p, p),       # 1: Top-Left
-            (cs-p, p),    # 2: Top-Right
-            (p, cs-p),    # 3: Bottom-Left
-            (cs-p, cs-p), # 4: Bottom-Right
-            (c, p),       # 5: Top-Center
-            (c, cs-p),    # 6: Bottom-Center
-            (p, c),       # 7: Left-Center
-            (cs-p, c)     # 8: Right-Center
-        ]
-        
-        self.task_label.set("EyeLink Calibration")
-        self.current_target_text.set(f"Point 1 of {len(self.calib_points)}")
-        self.status_text.set("Look closely at the red dot and click it.")
-        self._draw_calibration_dot()
-
-    def _draw_calibration_dot(self):
-        self.canvas.delete("all")
-        self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
-        
-        cx, cy = self.calib_points[self.current_calib_idx]
-        
-        # Draw a high-contrast target
-        self.canvas.create_oval(cx - 15, cy - 15, cx + 15, cy + 15, fill="#ff4d4d", outline="#cc0000", width=2)
-        self.canvas.create_oval(cx - 3, cy - 3, cx + 3, cy + 3, fill="#111111", outline="")
-
-    # --- TASK LOGIC ---
     def _start_sequence(self):
         self.sequence_mode = True
-        self._start_task("A")
+        self._start_calibration("A")
         self.status_text.set("Sequence mode: complete TMT-A, then TMT-B will start automatically.")
 
-    def _start_task(self, task_type):
-        if self.is_calibrating:
-            self.status_text.set("Please finish calibration first.")
-            return
-            
+    def _start_calibration(self, task_type):
         if self.session is not None and not self.session.provider.completed:
             self.session.finalize()
 
+        self.is_calibrating = True
+        self.calibration_index = 0
+        self.calibration_step = 0
+        self.current_calibration_task = task_type
+        
+        self.task_label.set("Calibration")
+        self.current_target_text.set("")
+        self._draw_current_calibration_dot()
+
+    def _draw_current_calibration_dot(self):
+        self.canvas.delete("all")
+        self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
+
+        x_pct, y_pct = self.calibration_points[self.calibration_index]
+        padding = self.canvas_size * 0.08
+        active_area = self.canvas_size - (padding * 2)
+        
+        canvas_x = int((x_pct / 100.0) * active_area + padding)
+        canvas_y = int((y_pct / 100.0) * active_area + padding)
+
+        self.canvas.create_oval(
+            canvas_x - self.node_radius, canvas_y - self.node_radius,
+            canvas_x + self.node_radius, canvas_y + self.node_radius,
+            fill="#ff4d4d", outline="#cc0000", width=2
+        )
+        self.canvas.create_oval(
+            canvas_x - 3, canvas_y - 3,
+            canvas_x + 3, canvas_y + 3,
+            fill="black"
+        )
+        
+        if self.calibration_step == 0:
+            self.status_text.set(f"Eye Calibration ({self.calibration_index + 1}/9): CLICK anywhere to LOG coordinates.")
+        else:
+            self.status_text.set(f"Eye Calibration ({self.calibration_index + 1}/9): Logged! CLICK anywhere to ADVANCE to next dot.")
+
+    def _start_task(self, task_type):
         try:
             d_mm = float(self.dist_mm.get())
             p_mm = float(self.pitch_mm.get())
@@ -397,21 +396,17 @@ class HumanTMTApp:
         )
         self.task_label.set(f"TMT-{task_type}")
         self.current_target_text.set(f"Current target: {self.session.provider.get_current_target()}")
-        self.status_text.set("Click the next target node in the correct sequence")
+        self.status_text.set("Calibration Complete! Click the next target node in the correct sequence.")
         self._redraw_canvas()
 
     def _reset_current_task(self):
         if self.is_calibrating:
-            self.is_calibrating = False
-            self.canvas.delete("all")
-            self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
-            self.task_label.set("Calibration Aborted")
-            self.status_text.set("Ready.")
+            return 
+        
+        if self.session is None:
             return
-            
-        if self.session is None: return
         task_type = self.session.task_type
-        self._start_task(task_type)
+        self._start_calibration(task_type)
 
     def _redraw_canvas(self):
         self.canvas.delete("all")
@@ -421,7 +416,7 @@ class HumanTMTApp:
         completed_count = provider.current_index
         current_target = provider.get_current_target()
 
-        padding = self.canvas_size * 0.08 
+        padding = self.canvas_size * 0.08
         active_area = self.canvas_size - (padding * 2)
 
         for idx, target in enumerate(provider.targets):
@@ -432,54 +427,68 @@ class HumanTMTApp:
 
             is_completed = idx < completed_count
             if is_completed:
-                color, outline, width = "#90ee90", "#2e8b57", 2
+                color = "#90ee90"
+                outline = "#2e8b57"
+                width = 2
             else:
-                color, outline, width = "#ffffff", "#333333", 2
+                color = "#ffffff"
+                outline = "#333333"
+                width = 2
 
             self.canvas.create_oval(
-                canvas_x - self.node_radius, canvas_y - self.node_radius,
-                canvas_x + self.node_radius, canvas_y + self.node_radius,
-                fill=color, outline=outline, width=width,
+                canvas_x - self.node_radius,
+                canvas_y - self.node_radius,
+                canvas_x + self.node_radius,
+                canvas_y + self.node_radius,
+                fill=color,
+                outline=outline,
+                width=width,
             )
             self.canvas.create_text(canvas_x, canvas_y, text=target, fill="#111111", font=("Segoe UI", int(self.node_radius*0.7), "bold"))
 
         self.canvas.create_text(
-            20, 20, anchor="nw",
+            20,
+            20,
+            anchor="nw",
             text=f"Score: {self.session.score}   Errors: {self.session.errors}   Next: {current_target or 'Complete'}",
-            font=("Segoe UI", 12, "bold"), fill="#1b1b1b",
+            font=("Segoe UI", 12, "bold"),
+            fill="#1b1b1b",
         )
 
     def _handle_mouse_move(self, event):
-        if self.is_calibrating or self.session is None: return
+        if self.session is None or self.is_calibrating:
+            return
         self.session.log_mouse_move(event.x, event.y)
 
     def _handle_mouse_click(self, event):
-        # --- CALIBRATION HIT REGISTRATION ---
         if self.is_calibrating:
-            cx, cy = self.calib_points[self.current_calib_idx]
-            
-            # Allow a slightly generous 30px click hit-box so they don't have to be pixel-perfect
-            if math.hypot(event.x - cx, event.y - cy) < 30:
-                # Log the exact canvas coordinate to the EyeTracker!
-                if self.eye_tracker:
-                    self.eye_tracker.log_event(f"CALIBRATION_DOT_{self.current_calib_idx}_X:{int(cx)}_Y:{int(cy)}")
+            if self.calibration_step == 0:
+                x_pct, y_pct = self.calibration_points[self.calibration_index]
+                padding = self.canvas_size * 0.08
+                active_area = self.canvas_size - (padding * 2)
+                canvas_x = int((x_pct / 100.0) * active_area + padding)
+                canvas_y = int((y_pct / 100.0) * active_area + padding)
                 
-                self.current_calib_idx += 1
+                if self.eye_tracker.connected:
+                    self.eye_tracker.log_event(f"CALIBRATION_DOT_{self.calibration_index}_X:{canvas_x}_Y:{canvas_y}")
                 
-                if self.current_calib_idx < len(self.calib_points):
-                    self.current_target_text.set(f"Point {self.current_calib_idx + 1} of {len(self.calib_points)}")
-                    self._draw_calibration_dot()
-                else:
+                self.calibration_step = 1
+                self._draw_current_calibration_dot() 
+                
+            elif self.calibration_step == 1:
+                self.calibration_index += 1
+                self.calibration_step = 0 
+                
+                if self.calibration_index >= len(self.calibration_points):
                     self.is_calibrating = False
-                    self.task_label.set("Calibration Complete")
-                    self.current_target_text.set("--")
-                    self.status_text.set("Ready to start a task.")
-                    self.canvas.delete("all")
-                    self.canvas.create_rectangle(0, 0, self.canvas_size, self.canvas_size, fill="#f8f8f8", outline="#eeeeee")
-            return
+                    self._start_task(self.current_calibration_task)
+                else:
+                    self._draw_current_calibration_dot()
+                    
+            return 
 
-        # --- NORMAL TASK HIT REGISTRATION ---
-        if self.session is None: return
+        if self.session is None:
+            return
 
         hit_target = self._target_at(event.x, event.y)
         if hit_target is None:
@@ -495,8 +504,8 @@ class HumanTMTApp:
         if self.session.provider.completed:
             self.session.finalize()
             if self.sequence_mode and self.session.task_type == "A":
-                self.status_text.set("TMT-A complete. Starting TMT-B...")
-                self.root.after(500, lambda: self._start_task("B"))
+                self.status_text.set("TMT-A complete. Starting TMT-B calibration...")
+                self.root.after(500, lambda: self._start_calibration("B"))
             elif self.sequence_mode and self.session.task_type == "B":
                 self.status_text.set("TMT-B complete. Sequence finished.")
                 self.sequence_mode = False
@@ -504,27 +513,34 @@ class HumanTMTApp:
                 self.status_text.set("Task complete. You can start another task.")
 
     def _target_at(self, x, y):
-        if self.session is None: return None
+        if self.session is None:
+            return None
         provider = self.session.provider
-        padding, active_area = self.canvas_size * 0.08, self.canvas_size - (self.canvas_size * 0.16)
+        
+        padding = self.canvas_size * 0.08
+        active_area = self.canvas_size - (padding * 2)
 
         for target in provider.targets:
             node_x, node_y = provider.get_target_coords(target)
+            
             canvas_x = int((node_x / 100.0) * active_area + padding)
             canvas_y = int((node_y / 100.0) * active_area + padding)
             
             distance = ((x - canvas_x) ** 2 + (y - canvas_y) ** 2) ** 0.5
-            if distance <= self.node_radius + 4: 
+            if distance <= self.node_radius + 4:
                 return target
         return None
         
     def _safe_exit(self, event=None):
         self.status_text.set("Saving data and disconnecting EyeLink...")
         self.root.update() 
+        
         if self.session is not None and not self.session.provider.completed:
             self.session.finalize()
-        elif self.eye_tracker and self.eye_tracker.connected:
+            
+        if self.eye_tracker and self.eye_tracker.connected:
             self.eye_tracker.disconnect()
+            
         self.root.destroy()
 
     def run(self):
