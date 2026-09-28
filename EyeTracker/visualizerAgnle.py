@@ -5,12 +5,14 @@ from tkinter import filedialog, ttk
 from pathlib import Path
 import numpy as np
 import math
+import subprocess
+import threading
 
-# --- COGNITIVE ANALYSIS CONFIGURATION CONSTANTS ---
-AOI_RADIUS_MULTIPLIER = 2.5       # Multiplier for node radius to define the visual Area of Interest (AOI)
-MIN_FIXATION_MS = 100             # Minimum dwell time in ms to count as a cognitive fixation
-SACCADE_VELOCITY_THRESHOLD = 0.5  # Minimum velocity (pixels/ms) to be classified as a rapid saccadic eye movement
-PERIPHERAL_RADIUS = 250           # Radius in pixels to define peripheral vision for memory encoding
+# --- BIOLOGICAL COGNITIVE CONSTANTS ---
+AOI_ANGLE_DEG = 2.0                 
+PERIPHERAL_ANGLE_DEG = 5.0          
+MIN_FIXATION_MS = 100               
+SACCADE_VELOCITY_DEG_MS = 0.03      
 
 class TMTSession:
     def __init__(self, task_type):
@@ -29,17 +31,25 @@ class TMTSession:
         self.use_auto_calib = False
         self.calib_coef_x = [0, 1, 0, 0, 0, 0] 
         self.calib_coef_y = [0, 0, 1, 0, 0, 0] 
-        
-        self.gaze_offset_x = 0.0
-        self.gaze_offset_y = 0.0
-        self.gaze_scale_x = 1.0
-        self.gaze_scale_y = 1.0
+        self.gaze_offset_x, self.gaze_offset_y = 0.0, 0.0
+        self.gaze_scale_x, self.gaze_scale_y = 1.0, 1.0
 
-        # Mouse coordinate to percentage mapping
-        self.mouse_to_pct_m_x = 1.0
-        self.mouse_to_pct_b_x = 0.0
-        self.mouse_to_pct_m_y = 1.0
-        self.mouse_to_pct_b_y = 0.0
+        self.mouse_to_pct_m_x, self.mouse_to_pct_b_x = 1.0, 0.0
+        self.mouse_to_pct_m_y, self.mouse_to_pct_b_y = 1.0, 0.0
+        
+        self.screen_dist_mm = 600.0  
+        self.pixel_pitch_mm = 0.27   
+
+    def pixels_to_degrees(self, px):
+        if self.screen_dist_mm <= 0 or self.pixel_pitch_mm <= 0: return 0.0
+        physical_size_mm = px * self.pixel_pitch_mm
+        radians = 2 * math.atan(physical_size_mm / (2 * self.screen_dist_mm))
+        return math.degrees(radians)
+
+    def degrees_to_pixels(self, deg):
+        if self.screen_dist_mm <= 0 or self.pixel_pitch_mm <= 0: return 0.0
+        physical_size_mm = 2 * self.screen_dist_mm * math.tan(math.radians(deg / 2))
+        return physical_size_mm / self.pixel_pitch_mm
 
     def load_jsonl(self, path):
         self.events = []
@@ -47,10 +57,16 @@ class TMTSession:
             for line in f:
                 if line.strip(): self.events.append(json.loads(line))
         if not self.events: return False
+        
         first_event = self.events[0]
         targets = first_event.get("targets", [])
         raw_layout = first_event.get("layout", [])
         self.layout = {targets[i]: raw_layout[i] for i in range(min(len(targets), len(raw_layout)))}
+        
+        if "physical_setup" in first_event:
+            self.screen_dist_mm = first_event["physical_setup"].get("distance_to_screen_mm", 600.0)
+            self.pixel_pitch_mm = first_event["physical_setup"].get("monitor_pixel_pitch_mm", 0.27)
+
         for ev in reversed(self.events):
             if ev.get("elapsed_since_start_ms") is not None:
                 self.max_time_ms = ev["elapsed_since_start_ms"]
@@ -68,11 +84,9 @@ class TMTSession:
         msg_timer_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+timer_started")
         msg_calib_pattern = re.compile(r"^MSG\s+(\d+)\s+TMT_EVENT:\s+CALIBRATION_DOT_(\d+)_X:(\d+)_Y:(\d+)")
 
-        # Read all lines so we can slice the timeline effectively
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
 
-        # Step 1: Find all task starts in the continuous file
         timer_syncs = []
         for line in lines:
             if match := msg_timer_pattern.match(line.strip()):
@@ -84,50 +98,37 @@ class TMTSession:
         if len(timer_syncs) > target_timer_index:
             sync_time = timer_syncs[target_timer_index]
         elif len(timer_syncs) > 0:
-            sync_time = timer_syncs[-1] # Fallback if looking for B but only 1 exists
+            sync_time = timer_syncs[-1]
             
         if sync_time is None:
-            # Absolute fallback to first gaze sample if no MSG triggers exist
             for line in lines:
                 if match := sample_pattern.match(line.strip()):
                     sync_time = int(match.group(1))
                     break
             if sync_time is None: sync_time = 0
 
-        # Step 2: Define strict bounds for calibration dots based on task phase
         if self.task_type == "A":
-            calib_start = 0
-            calib_end = sync_time
+            calib_start, calib_end = 0, sync_time
         else:
-            # Task B: valid calibs fall between Task A's timer and Task B's timer
             calib_start = timer_syncs[0] if len(timer_syncs) > 1 else 0
             calib_end = sync_time
 
-        # Step 3: Parse and filter the data
         for line in lines:
             s = line.strip()
-            
             if calib_match := msg_calib_pattern.match(s):
                 raw_ts = int(calib_match.group(1))
                 if calib_start <= raw_ts <= calib_end:
-                    ts = raw_ts - sync_time
-                    idx = int(calib_match.group(2))
-                    cx = int(calib_match.group(3))
-                    cy = int(calib_match.group(4))
-                    self.calib_events.append((ts, idx, cx, cy))
+                    self.calib_events.append((raw_ts - sync_time, int(calib_match.group(2)), int(calib_match.group(3)), int(calib_match.group(4))))
                 continue
 
             if match := sample_pattern.match(s):
                 ts_str, x_str, y_str = match.groups()
                 if x_str == "." or y_str == ".": continue
-                try: 
-                    self.gaze_samples.append((int(ts_str) - sync_time, float(x_str), float(y_str)))
-                except ValueError: 
-                    pass
+                try: self.gaze_samples.append((int(ts_str) - sync_time, float(x_str), float(y_str)))
+                except ValueError: pass
 
         self.min_time_ms = self.gaze_samples[0][0] if self.gaze_samples else 0
 
-        # Match the filtered calibration events to their exact gaze coordinates
         if self.gaze_samples and self.calib_events:
             for ct, idx, cx, cy in self.calib_events:
                 closest_gaze = min(self.gaze_samples, key=lambda g: abs(g[0] - ct))
@@ -135,53 +136,33 @@ class TMTSession:
                     "ts": ct, "idx": idx, "target_cx": cx, "target_cy": cy,
                     "raw_cx": closest_gaze[1] - offset_x, "raw_cy": closest_gaze[2] - offset_y
                 })
-        
         self.is_asc_loaded = True
         return True
 
     def calibrate_mouse_coordinates(self):
         clicks = [ev for ev in self.events if ev.get("event_type") == "correct_click" and "target" in ev and "x" in ev and "y" in ev]
         if len(clicks) < 2: return
-
         Ax, Bx, Ay, By = [], [], [], []
         for c in clicks:
-            t_id = str(c["target"])
-            if t_id in self.layout:
-                pct_x, pct_y = self.layout[t_id]
-                Ax.append([c["x"], 1])
-                Bx.append(pct_x)
-                Ay.append([c["y"], 1])
-                By.append(pct_y)
-        
+            if str(c["target"]) in self.layout:
+                pct_x, pct_y = self.layout[str(c["target"])]
+                Ax.append([c["x"], 1]); Bx.append(pct_x); Ay.append([c["y"], 1]); By.append(pct_y)
         if len(Ax) >= 2:
-            coef_x, _, _, _ = np.linalg.lstsq(Ax, Bx, rcond=None)
-            self.mouse_to_pct_m_x, self.mouse_to_pct_b_x = coef_x[0], coef_x[1]
-            coef_y, _, _, _ = np.linalg.lstsq(Ay, By, rcond=None)
-            self.mouse_to_pct_m_y, self.mouse_to_pct_b_y = coef_y[0], coef_y[1]
+            self.mouse_to_pct_m_x, self.mouse_to_pct_b_x = np.linalg.lstsq(Ax, Bx, rcond=None)[0][:2]
+            self.mouse_to_pct_m_y, self.mouse_to_pct_b_y = np.linalg.lstsq(Ay, By, rcond=None)[0][:2]
 
     def apply_calibration(self, raw_cx, raw_cy, center_cx, center_cy):
         if self.use_auto_calib:
             x, y = raw_cx, raw_cy
-            cx = (self.calib_coef_x[0] + self.calib_coef_x[1]*x + self.calib_coef_x[2]*y + 
-                  self.calib_coef_x[3]*(x**2) + self.calib_coef_x[4]*(y**2) + self.calib_coef_x[5]*x*y)
-            cy = (self.calib_coef_y[0] + self.calib_coef_y[1]*x + self.calib_coef_y[2]*y + 
-                  self.calib_coef_y[3]*(x**2) + self.calib_coef_y[4]*(y**2) + self.calib_coef_y[5]*x*y)
+            cx = self.calib_coef_x[0] + self.calib_coef_x[1]*x + self.calib_coef_x[2]*y + self.calib_coef_x[3]*(x**2) + self.calib_coef_x[4]*(y**2) + self.calib_coef_x[5]*x*y
+            cy = self.calib_coef_y[0] + self.calib_coef_y[1]*x + self.calib_coef_y[2]*y + self.calib_coef_y[3]*(x**2) + self.calib_coef_y[4]*(y**2) + self.calib_coef_y[5]*x*y
             return cx, cy
         else:
-            cx = ((raw_cx - center_cx) * self.gaze_scale_x) + center_cx + self.gaze_offset_x
-            cy = ((raw_cy - center_cy) * self.gaze_scale_y) + center_cy + self.gaze_offset_y
-            return cx, cy
+            return ((raw_cx - center_cx) * self.gaze_scale_x) + center_cx + self.gaze_offset_x, ((raw_cy - center_cy) * self.gaze_scale_y) + center_cy + self.gaze_offset_y
 
-
-# --- HEADLESS ENGINE FOR OPTIMIZER INTEGRATION ---
 class HeadlessCognitiveAnalyzer:
-    def __init__(self, aoi_mult, min_fix_ms, saccade_thresh, canvas_size):
-        self.aoi_mult = aoi_mult
-        self.min_fix_ms = min_fix_ms
-        self.saccade_thresh = saccade_thresh
+    def __init__(self, canvas_size):
         self.canvas_size = canvas_size
-        self.node_radius = int(self.canvas_size * 0.025)
-        self.aoi_radius = self.node_radius * self.aoi_mult
 
     def _get_node_canvas_pos(self, x, y):
         padding = self.canvas_size * 0.08
@@ -189,6 +170,10 @@ class HeadlessCognitiveAnalyzer:
         return int((x / 100.0) * active_area + padding), int((y / 100.0) * active_area + padding)
 
     def analyze_session(self, session, offset_x=0, offset_y=0):
+        # FIX: Divide by 2.0 to get actual radius from physical diameter
+        aoi_radius_px = session.degrees_to_pixels(AOI_ANGLE_DEG) / 2.0
+        peripheral_radius_px = session.degrees_to_pixels(PERIPHERAL_ANGLE_DEG) / 2.0
+
         clicks = []
         for ev in session.events:
             if ev.get("event_type") == "correct_click":
@@ -204,76 +189,64 @@ class HeadlessCognitiveAnalyzer:
 
         task_memory_times, task_search_times, task_motor_times = [], [], []
         task_skips, task_search_saccades = 0, []
-        
-        # New Memory Metrics
-        task_memory_capacities, task_memory_noises = [], []
+        task_memory_capacities, task_memory_noises_deg = [], []
 
         for i in range(1, len(clicks)):
-            prev_click = clicks[i-1]
-            curr_click = clicks[i]
+            prev_click, curr_click = clicks[i-1], clicks[i]
             t_start, t_end = prev_click["time"], curr_click["time"]
-            
             segment = [g for g in calibrated_gaze if t_start <= g[0] <= t_end]
             if not segment: continue
 
-            # Working Memory Dwell Time
             t_leave = t_start
             for g in segment:
-                dist = math.hypot(g[1] - prev_click["cx"], g[2] - prev_click["cy"])
-                if dist > self.aoi_radius:
+                if math.hypot(g[1] - prev_click["cx"], g[2] - prev_click["cy"]) > aoi_radius_px:
                     t_leave = g[0]
                     break
             task_memory_times.append(t_leave - t_start)
 
-            t_fix_start = None
-            fixation_timer, last_g_time, saccade_count = 0, t_leave, 0
+            t_fix_start, fixation_timer, last_g_time, saccade_count = None, 0, t_leave, 0
             landing_gaze = None
             
-            # Search Analysis
             for g in segment:
                 if g[0] < t_leave: continue
                 time_delta = g[0] - last_g_time
                 if time_delta > 0:
-                    velocity = math.hypot(g[1] - segment[segment.index(g)-1][1], g[2] - segment[segment.index(g)-1][2]) / time_delta
-                    if velocity > self.saccade_thresh: saccade_count += 1
+                    px_dist = math.hypot(g[1] - segment[segment.index(g)-1][1], g[2] - segment[segment.index(g)-1][2])
+                    deg_dist = session.pixels_to_degrees(px_dist)
+                    velocity_deg = deg_dist / time_delta
+                    if velocity_deg > SACCADE_VELOCITY_DEG_MS: 
+                        saccade_count += 1
                 last_g_time = g[0]
 
-                dist = math.hypot(g[1] - curr_click["cx"], g[2] - curr_click["cy"])
-                if dist <= self.aoi_radius:
+                if math.hypot(g[1] - curr_click["cx"], g[2] - curr_click["cy"]) <= aoi_radius_px:
                     if fixation_timer == 0: 
                         fixation_start_t = g[0]
-                        landing_gaze = g # Capture the exact gaze point where they first entered the AOI
+                        landing_gaze = g 
                     fixation_timer += time_delta
-                    if fixation_timer >= self.min_fix_ms and t_fix_start is None:
+                    if fixation_timer >= MIN_FIXATION_MS and t_fix_start is None:
                         t_fix_start = fixation_start_t
                 else:
-                    if 0 < fixation_timer < self.min_fix_ms: task_skips += 1
+                    if 0 < fixation_timer < MIN_FIXATION_MS: task_skips += 1
                     fixation_timer = 0
 
-            # Spatial Memory Extraction Logic
             if t_fix_start is not None and saccade_count <= 1 and landing_gaze is not None:
-                # 1. Memory Precision (Noise)
-                noise = math.hypot(landing_gaze[1] - curr_click["cx"], landing_gaze[2] - curr_click["cy"])
-                task_memory_noises.append(noise)
+                noise_px = math.hypot(landing_gaze[1] - curr_click["cx"], landing_gaze[2] - curr_click["cy"])
+                task_memory_noises_deg.append(session.pixels_to_degrees(noise_px))
                 
-                # 2. Memory Capacity (Scrub backwards)
                 t_seen = None
                 for past_g in reversed([g for g in calibrated_gaze if g[0] < t_leave]):
-                    if math.hypot(past_g[1] - curr_click["cx"], past_g[2] - curr_click["cy"]) < PERIPHERAL_RADIUS:
+                    if math.hypot(past_g[1] - curr_click["cx"], past_g[2] - curr_click["cy"]) < peripheral_radius_px:
                         t_seen = past_g[0]
                         break
                 
                 if t_seen is not None:
                     seen_step = 0
-                    # Find which step they were working on when they saw it
                     for k in range(0, i):
                         start_bound = 0 if k == 0 else clicks[k-1]["time"]
-                        end_bound = clicks[k]["time"]
-                        if start_bound <= t_seen <= end_bound:
+                        if start_bound <= t_seen <= clicks[k]["time"]:
                             seen_step = k
                             break
-                    capacity = i - seen_step
-                    task_memory_capacities.append(capacity)
+                    task_memory_capacities.append(i - seen_step)
 
             if t_fix_start is None: t_fix_start = t_end
 
@@ -287,11 +260,9 @@ class HeadlessCognitiveAnalyzer:
             "Motor (ms)": float(np.mean(task_motor_times)) if task_motor_times else 0.0,
             "Total Skips": int(task_skips),
             "Saccades/Search": float(np.mean(task_search_saccades)) if task_search_saccades else 0.0,
-            # Fallbacks of 1 and 40.0 applied if no memory jumps occur, preventing broken bot behavior
             "Memory Capacity": int(np.mean(task_memory_capacities)) if task_memory_capacities else 1,
-            "Memory Noise (px)": float(np.mean(task_memory_noises)) if task_memory_noises else 40.0
+            "Memory Noise (deg)": float(np.mean(task_memory_noises_deg)) if task_memory_noises_deg else AOI_ANGLE_DEG
         }
-
 
 class TMTReplayApp:
     def __init__(self, root):
@@ -303,10 +274,7 @@ class TMTReplayApp:
         self.canvas_size = int(screen_height * 0.85)
         self.node_radius = int(self.canvas_size * 0.025)
 
-        self.sessions = {
-            "A": TMTSession("A"),
-            "B": TMTSession("B")
-        }
+        self.sessions = {"A": TMTSession("A"), "B": TMTSession("B")}
         
         self.active_task = "A" 
         self.play_mode = "A" 
@@ -321,7 +289,6 @@ class TMTReplayApp:
         control_frame = ttk.Frame(self.root, padding=10)
         control_frame.pack(fill=tk.X)
 
-        # --- TMT-A Row ---
         row_a = ttk.Frame(control_frame)
         row_a.pack(fill=tk.X, pady=2)
         ttk.Label(row_a, text="TMT-A:", font=("Segoe UI", 10, "bold"), width=8).pack(side=tk.LEFT)
@@ -332,7 +299,6 @@ class TMTReplayApp:
         self.status_lbl_a = ttk.Label(row_a, text="Waiting for files...", foreground="#4da6ff")
         self.status_lbl_a.pack(side=tk.LEFT, padx=10)
 
-        # --- TMT-B Row ---
         row_b = ttk.Frame(control_frame)
         row_b.pack(fill=tk.X, pady=2)
         ttk.Label(row_b, text="TMT-B:", font=("Segoe UI", 10, "bold"), width=8).pack(side=tk.LEFT)
@@ -345,7 +311,6 @@ class TMTReplayApp:
 
         ttk.Separator(control_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=8)
 
-        # --- Playback & Analysis Row ---
         row_play = ttk.Frame(control_frame)
         row_play.pack(fill=tk.X, pady=2)
         
@@ -364,15 +329,29 @@ class TMTReplayApp:
         speed_menu.pack(side=tk.LEFT)
         speed_menu.bind("<<ComboboxSelected>>", self._change_speed)
         
-        # --- THE MAGIC ANALYSIS BUTTON ---
         self.analyze_btn = ttk.Button(row_play, text="Run Cognitive Analysis", command=self._run_analysis)
         self.analyze_btn.pack(side=tk.RIGHT, padx=10)
+        
+        # --- ML OPTIMIZER BUTTON ---
+        self.ml_btn = ttk.Button(row_play, text="Launch ML Optimization", command=self._launch_ml_optimizer)
+        self.ml_btn.pack(side=tk.RIGHT, padx=5)
 
         canvas_container = tk.Frame(self.root, bg="#2b2b2b")
         canvas_container.pack(fill=tk.BOTH, expand=True)
         self.canvas = tk.Canvas(canvas_container, width=self.canvas_size, height=self.canvas_size, bg="#f5f5f5", highlightthickness=0)
         self.canvas.pack(pady=10)
         self.canvas.create_text(self.canvas_size/2, self.canvas_size/2, text="Load Data to Begin", font=("Segoe UI", 16, "bold"), fill="#aaaaaa")
+
+    def _launch_ml_optimizer(self):
+        """Spins up a separate thread to run the Genetic Algorithm without freezing the UI."""
+        def run_script():
+            try:
+                # Opens a new console window to show the AI evolution terminal logs
+                subprocess.Popen(["start", "cmd", "/k", "python", "ml_optimizer.py"], shell=True)
+            except Exception as e:
+                print(f"Failed to launch optimizer: {e}")
+        
+        threading.Thread(target=run_script, daemon=True).start()
 
     def _load_jsonl_ui(self, task_type):
         path = filedialog.askopenfilename(title=f"Select JSONL for TMT-{task_type}", filetypes=[("JSON Lines", "*.jsonl"), ("JSON files", "*.json")])
@@ -454,7 +433,8 @@ class TMTReplayApp:
     def _manual_slider_update(self, event=None):
         session = self.sessions[self.calib_active_task]
         session.use_auto_calib = False
-        self.calib_status_lbl.config(text="Mode: Manual (Linear)", foreground="#ffaa00")
+        if hasattr(self, 'calib_status_lbl') and self.calib_status_lbl.winfo_exists():
+            self.calib_status_lbl.config(text="Mode: Manual (Linear)", foreground="#ffaa00")
         session.gaze_offset_x, session.gaze_offset_y = self.ox_scale.get(), self.oy_scale.get()
         session.gaze_scale_x, session.gaze_scale_y = self.sx_scale.get(), self.sy_scale.get()
         self._redraw_calib_preview()
@@ -481,7 +461,7 @@ class TMTReplayApp:
         return int((x / 100.0) * active_area + padding), int((y / 100.0) * active_area + padding)
 
     def _run_analysis(self):
-        analyzer = HeadlessCognitiveAnalyzer(AOI_RADIUS_MULTIPLIER, MIN_FIXATION_MS, SACCADE_VELOCITY_THRESHOLD, self.canvas_size)
+        analyzer = HeadlessCognitiveAnalyzer(self.canvas_size)
         offset_x = (self.root.winfo_screenwidth() - self.canvas_size) / 2
         offset_y = (self.root.winfo_screenheight() - self.canvas_size) / 2
         
@@ -497,11 +477,11 @@ class TMTReplayApp:
     def _show_analysis_dashboard(self, results):
         if not results: return
         win = tk.Toplevel(self.root)
-        win.title("Cognitive Simulation Metrics Dashboard")
+        win.title("Biological Cognitive Metrics Dashboard")
         win.geometry("500x550")
         win.configure(bg="#2b2b2b")
         
-        ttk.Label(win, text="Data Extracted from Timeline Slicer", font=("Segoe UI", 14, "bold")).pack(pady=10)
+        ttk.Label(win, text="Data Extracted via Visual Angle Models", font=("Segoe UI", 14, "bold")).pack(pady=10)
 
         for task, metrics in results.items():
             if not metrics: continue
@@ -513,14 +493,11 @@ class TMTReplayApp:
             ttk.Label(frame, text=f"Motor Execution (motor_speed): {int(metrics['Motor (ms)'])} ms").pack(anchor=tk.W)
             ttk.Label(frame, text=f"Visual Skip Probability: {metrics['Total Skips']} occurrences").pack(anchor=tk.W)
             ttk.Label(frame, text=f"Avg Saccades per Search: {metrics['Saccades/Search']:.1f}").pack(anchor=tk.W)
-            
-            # Show the new Spatial Memory metrics
             ttk.Label(frame, text=f"Memory Capacity (nodes): {metrics['Memory Capacity']}").pack(anchor=tk.W, pady=(5,0))
-            ttk.Label(frame, text=f"Memory Noise / Precision: {metrics['Memory Noise (px)']:.1f} px").pack(anchor=tk.W)
+            ttk.Label(frame, text=f"Memory Noise / Precision: {metrics['Memory Noise (deg)']:.1f}°").pack(anchor=tk.W)
 
         if "A" in results and "B" in results and results["A"] and results["B"]:
             shift_delta = (results["B"]["Search (ms)"] + results["B"]["Memory (ms)"]) - (results["A"]["Search (ms)"] + results["A"]["Memory (ms)"])
-            
             shift_frame = ttk.LabelFrame(win, text=" Set Shifting Analysis (TMT-B vs TMT-A) ", padding=10)
             shift_frame.pack(fill=tk.X, padx=20, pady=10)
             ttk.Label(shift_frame, text=f"Set Shifting Time (shift_speed): {int(max(0, shift_delta))} ms", foreground="#ff4d4d", font=("Segoe UI", 12, "bold")).pack(anchor=tk.W)
@@ -575,25 +552,49 @@ class TMTReplayApp:
             elif ev_t is not None and ev_t > self.current_time_ms: break
 
         self._draw_task_layout(session, completed_count)
-        self.canvas.create_text(20, 20, anchor="nw", text=f"Phase: TMT-{self.active_task} Task | Time: {int(self.current_time_ms)}ms", font=("Segoe UI", 12, "bold"), fill="#1b1b1b")
 
+        center_cx, offset_x, offset_y = self.canvas_size / 2, (self.root.winfo_screenwidth() - self.canvas_size) / 2, (self.root.winfo_screenheight() - self.canvas_size) / 2
+
+        deg_error = 0.0
+        
         if session.gaze_samples:
             window_start = max(session.min_time_ms, self.current_time_ms - 300)
             visible_gaze = [(x, y) for (t, x, y) in session.gaze_samples if window_start <= t <= self.current_time_ms]
-            center_cx, offset_x, offset_y = self.canvas_size / 2, (self.root.winfo_screenwidth() - self.canvas_size) / 2, (self.root.winfo_screenheight() - self.canvas_size) / 2
 
             for gx, gy in visible_gaze:
                 transformed_cx, transformed_cy = session.apply_calibration(gx - offset_x, gy - offset_y, center_cx, center_cx)
                 self.canvas.create_oval(transformed_cx - 3, transformed_cy - 3, transformed_cx + 3, transformed_cy + 3, fill="#ff3366", outline="")
 
+            if visible_gaze:
+                active_target_idx = min(completed_count, len(session.layout) - 1)
+                active_target_key = list(session.layout.keys())[active_target_idx]
+                t_pct_x, t_pct_y = session.layout[active_target_key]
+                tx, ty = self._get_node_canvas_pos(t_pct_x, t_pct_y)
+                
+                current_gaze = visible_gaze[-1]
+                gx, gy = session.apply_calibration(current_gaze[0] - offset_x, current_gaze[1] - offset_y, center_cx, center_cx)
+                
+                # FIX: Divide by 2 to map the diameter correctly to pixel radius
+                vf_radius_px = session.degrees_to_pixels(PERIPHERAL_ANGLE_DEG) / 2.0
+                fovea_radius_px = session.degrees_to_pixels(AOI_ANGLE_DEG) / 2.0
+                
+                self.canvas.create_oval(gx - vf_radius_px, gy - vf_radius_px, gx + vf_radius_px, gy + vf_radius_px, outline="#3388ff", dash=(4,4), width=2)
+                self.canvas.create_oval(gx - fovea_radius_px, gy - fovea_radius_px, gx + fovea_radius_px, gy + fovea_radius_px, outline="#ff3366", width=2)
+                
+                px_dist = math.hypot(gx - tx, gy - ty)
+                deg_error = session.pixels_to_degrees(px_dist)
+
+        self.canvas.create_text(
+            20, 20, anchor="nw", 
+            text=f"Phase: TMT-{self.active_task} | Time: {int(self.current_time_ms)}ms | Gaze Target Error: {deg_error:.1f}°", 
+            font=("Segoe UI", 12, "bold"), fill="#1b1b1b"
+        )
+
         if latest_mouse and self.current_time_ms >= 0:
             raw_mx, raw_my, ev_type = latest_mouse
-            
-            # Map raw coordinates to internal percentages, then back to the current canvas space
             pct_x = raw_mx * session.mouse_to_pct_m_x + session.mouse_to_pct_b_x
             pct_y = raw_my * session.mouse_to_pct_m_y + session.mouse_to_pct_b_y
             mx, my = self._get_node_canvas_pos(pct_x, pct_y)
-            
             self.canvas.create_oval(mx - 4, my - 4, mx + 4, my + 4, fill="#00cc00" if ev_type == "correct_click" else "#3388ff", outline="#000000")
 
         step_interval = 25  
