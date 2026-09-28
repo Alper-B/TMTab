@@ -50,11 +50,19 @@ class EyeTrackerController:
             self.tracker.sendMessage(f"TMT_EVENT: {event_message}")
 
     def disconnect(self):
-        """Safely shuts down tracking at the end of the experiment."""
+        """Safely shuts down tracking and retrieves the EDF file."""
         if self.connected and self.tracker:
-            print("Disconnecting EyeLink...")
-            self.tracker.setConnectionState(False)
+            print("Disconnecting EyeLink and transferring EDF file...")
+            
+            # 1. Stop recording FIRST so the Host PC securely closes the EDF file
             self.tracker.setRecordingState(False)
+            
+            # 2. Give the Host PC a half-second to finalize the file on its hard drive
+            time.sleep(0.5)
+            
+            # 3. Close connection NEXT (This tells ioHub to download the EDF to your local PC)
+            self.tracker.setConnectionState(False)
+            
             if self.io:
                 self.io.quit()
             self.connected = False
@@ -97,7 +105,7 @@ class SharedLayoutTMTTaskProvider:
         return self.provider.completed
 
 class HumanTMTSession:
-    def __init__(self, task_type="A", participant_id="participant", log_path=None, shared_layout=None, eye_tracker=None, screen_dist=600, pixel_pitch=0.27):
+    def __init__(self, task_type="A", participant_id="participant", log_path=None, shared_layout=None, eye_tracker=None, screen_dist=610, pixel_pitch=0.27):
         self.task_type = task_type
         self.participant_id = participant_id
         self.provider = SharedLayoutTMTTaskProvider(task_type=task_type, layout=shared_layout)
@@ -248,7 +256,7 @@ class HumanTMTApp:
         self.node_radius = int(self.canvas_size * 0.025)
 
         self.participant_name = tk.StringVar(value="participant")
-        self.dist_mm = tk.StringVar(value="600")
+        self.dist_mm = tk.StringVar(value="610")
         self.pitch_mm = tk.StringVar(value="0.27")
         self.task_label = tk.StringVar(value="TMT-A")
         self.status_text = tk.StringVar(value="Start a task to begin recording")
@@ -384,7 +392,7 @@ class HumanTMTApp:
             d_mm = float(self.dist_mm.get())
             p_mm = float(self.pitch_mm.get())
         except ValueError:
-            d_mm, p_mm = 600.0, 0.27
+            d_mm, p_mm = 610.0, 0.27
 
         self.session = HumanTMTSession(
             task_type=task_type,
